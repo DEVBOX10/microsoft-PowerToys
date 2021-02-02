@@ -189,7 +189,8 @@ namespace FancyZonesUnitTests
 
     TEST_CLASS (CanvasLayoutInfoUnitTests)
     {
-        json::JsonObject m_json = json::JsonObject::Parse(L"{\"ref-width\": 123, \"ref-height\": 321, \"zones\": [{\"X\": 11, \"Y\": 22, \"width\": 33, \"height\": 44}, {\"X\": 55, \"Y\": 66, \"width\": 77, \"height\": 88}]}");
+        json::JsonObject m_json = json::JsonObject::Parse(L"{\"ref-width\": 123, \"ref-height\": 321, \"zones\": [{\"X\": 11, \"Y\": 22, \"width\": 33, \"height\": 44}, {\"X\": 55, \"Y\": 66, \"width\": 77, \"height\": 88}], \"sensitivity-radius\": 50}");
+        json::JsonObject m_jsonWithoutOptionalValues = json::JsonObject::Parse(L"{\"ref-width\": 123, \"ref-height\": 321, \"zones\": [{\"X\": 11, \"Y\": 22, \"width\": 33, \"height\": 44}, {\"X\": 55, \"Y\": 66, \"width\": 77, \"height\": 88}]}");
 
         TEST_METHOD (ToJson)
         {
@@ -197,6 +198,7 @@ namespace FancyZonesUnitTests
             info.lastWorkAreaWidth = 123;
             info.lastWorkAreaHeight = 321;
             info.zones = { CanvasLayoutInfo::Rect{ 11, 22, 33, 44 }, CanvasLayoutInfo::Rect{ 55, 66, 77, 88 } };
+            info.sensitivityRadius = 50;
 
             auto actual = CanvasLayoutInfoJSON::ToJson(info);
             compareJsonObjects(m_json, actual);
@@ -208,6 +210,7 @@ namespace FancyZonesUnitTests
             expected.lastWorkAreaWidth = 123;
             expected.lastWorkAreaHeight = 321;
             expected.zones = { CanvasLayoutInfo::Rect{ 11, 22, 33, 44 }, CanvasLayoutInfo::Rect{ 55, 66, 77, 88 } };
+            expected.sensitivityRadius = 50;
 
             auto actual = CanvasLayoutInfoJSON::FromJson(m_json);
             Assert::IsTrue(actual.has_value());
@@ -215,6 +218,30 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(expected.lastWorkAreaHeight, actual->lastWorkAreaHeight);
             Assert::AreEqual(expected.lastWorkAreaWidth, actual->lastWorkAreaWidth);
             Assert::AreEqual(expected.zones.size(), actual->zones.size());
+            Assert::AreEqual(expected.sensitivityRadius, actual->sensitivityRadius);
+            for (int i = 0; i < expected.zones.size(); i++)
+            {
+                Assert::AreEqual(expected.zones[i].x, actual->zones[i].x);
+                Assert::AreEqual(expected.zones[i].y, actual->zones[i].y);
+                Assert::AreEqual(expected.zones[i].width, actual->zones[i].width);
+                Assert::AreEqual(expected.zones[i].height, actual->zones[i].height);
+            }
+        }
+
+        TEST_METHOD (FromJsonWithoutOptionalValues)
+        {
+            CanvasLayoutInfo expected;
+            expected.lastWorkAreaWidth = 123;
+            expected.lastWorkAreaHeight = 321;
+            expected.zones = { CanvasLayoutInfo::Rect{ 11, 22, 33, 44 }, CanvasLayoutInfo::Rect{ 55, 66, 77, 88 } };
+            
+            auto actual = CanvasLayoutInfoJSON::FromJson(m_jsonWithoutOptionalValues);
+            Assert::IsTrue(actual.has_value());
+
+            Assert::AreEqual(expected.lastWorkAreaHeight, actual->lastWorkAreaHeight);
+            Assert::AreEqual(expected.lastWorkAreaWidth, actual->lastWorkAreaWidth);
+            Assert::AreEqual(expected.zones.size(), actual->zones.size());
+            Assert::AreEqual(DefaultValues::SensitivityRadius, actual->sensitivityRadius);
             for (int i = 0; i < expected.zones.size(); i++)
             {
                 Assert::AreEqual(expected.zones[i].x, actual->zones[i].x);
@@ -226,7 +253,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (FromJsonMissingKeys)
         {
-            CanvasLayoutInfo info{ 123, 321, { CanvasLayoutInfo::Rect{ 11, 22, 33, 44 }, CanvasLayoutInfo::Rect{ 55, 66, 77, 88 } } };
+            CanvasLayoutInfo info{ 123, 321, { CanvasLayoutInfo::Rect{ 11, 22, 33, 44 }, CanvasLayoutInfo::Rect{ 55, 66, 77, 88 } }, 50 };
             const auto json = CanvasLayoutInfoJSON::ToJson(info);
 
             auto iter = json.First();
@@ -234,6 +261,11 @@ namespace FancyZonesUnitTests
             {
                 json::JsonObject modifiedJson = json::JsonObject::Parse(json.Stringify());
                 modifiedJson.Remove(iter.Current().Key());
+                if (iter.Current().Key() == L"sensitivity-radius")
+                {
+                    iter.MoveNext();
+                    continue;
+                }
 
                 auto actual = CanvasLayoutInfoJSON::FromJson(modifiedJson);
                 Assert::IsFalse(actual.has_value());
@@ -436,6 +468,27 @@ namespace FancyZonesUnitTests
                     compareJsonObjects(expected, actual);
                 }
 
+                
+                TEST_METHOD (ToJsonWithOptionals)
+                {
+                    json::JsonObject expected = json::JsonObject();
+                    expected = json::JsonObject::Parse(L"{\"rows\": 3, \"columns\": 4}");
+                    expected.SetNamedValue(L"rows-percentage", m_rowsArray);
+                    expected.SetNamedValue(L"columns-percentage", m_columnsArray);
+                    expected.SetNamedValue(L"cell-child-map", m_cells);
+                    expected.SetNamedValue(L"show-spacing", json::value(true));
+                    expected.SetNamedValue(L"spacing", json::value(99));
+                    expected.SetNamedValue(L"sensitivity-radius", json::value(55));
+
+                    GridLayoutInfo info = m_info;
+                    info.m_sensitivityRadius = 55;
+                    info.m_showSpacing = true;
+                    info.m_spacing = 99;
+
+                    auto actual = GridLayoutInfoJSON::ToJson(info);
+                    compareJsonObjects(expected, actual);
+                }
+
                 TEST_METHOD (FromJson)
                 {
                     json::JsonObject json = json::JsonObject(m_gridJson);
@@ -512,6 +565,27 @@ namespace FancyZonesUnitTests
 
                         iter.MoveNext();
                     }
+                }
+
+                TEST_METHOD(FromJsonWithOptionals)
+                {
+                    json::JsonObject json = json::JsonObject();
+                    json = json::JsonObject::Parse(L"{\"rows\": 3, \"columns\": 4}");
+                    json.SetNamedValue(L"rows-percentage", m_rowsArray);
+                    json.SetNamedValue(L"columns-percentage", m_columnsArray);
+                    json.SetNamedValue(L"cell-child-map", m_cells);
+                    json.SetNamedValue(L"show-spacing", json::value(true));
+                    json.SetNamedValue(L"spacing", json::value(99));
+                    json.SetNamedValue(L"sensitivity-radius", json::value(55));
+
+                    GridLayoutInfo expected = m_info;
+                    expected.m_sensitivityRadius = 55;
+                    expected.m_showSpacing = true;
+                    expected.m_spacing = 99;
+
+                    auto actual = GridLayoutInfoJSON::FromJson(json);
+                    Assert::IsTrue(actual.has_value());
+                    compareGridInfos(expected, *actual);
                 }
 
                 TEST_METHOD (FromJsonInvalidTypes)
@@ -947,6 +1021,8 @@ namespace FancyZonesUnitTests
         const json::JsonValue m_defaultCustomDeviceValue = json::JsonValue::Parse(m_defaultCustomDeviceStr);
         const json::JsonObject m_defaultCustomDeviceObj = json::JsonObject::Parse(m_defaultCustomDeviceStr);
 
+        GUID m_defaultVDId;
+        
         HINSTANCE m_hInst{};
         FancyZonesData& m_fzData = FancyZonesDataInstance();
 
@@ -964,6 +1040,10 @@ namespace FancyZonesUnitTests
             m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
             m_fzData.clear_data();
             std::filesystem::remove_all(PTSettingsHelper::get_module_save_folder_location(m_moduleName));
+
+            auto guid = Helpers::StringToGuid(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}");
+            Assert::IsTrue(guid.has_value());
+            m_defaultVDId = *guid;
         }
 
         TEST_METHOD_CLEANUP(CleanUp)
@@ -1092,66 +1172,6 @@ namespace FancyZonesUnitTests
 
                 auto actual = SerializeDeviceInfos(deviceInfoMap);
                 compareJsonArrays(expectedDevices, actual);
-            }
-
-            TEST_METHOD (DeviceInfoSaveTemp)
-            {
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-                DeviceInfoJSON deviceInfo{ L"default_device_id", DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
-
-                const std::wstring path = data.zonesSettingsFileName + L".test_tmp";
-                JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfo, path);
-
-                bool actualFileExists = std::filesystem::exists(path);
-                Assert::IsTrue(actualFileExists);
-
-                auto expectedData = DeviceInfoJSON::ToJson(deviceInfo);
-                auto actualSavedData = json::from_file(path);
-                std::filesystem::remove(path); //clean up before compare asserts
-
-                Assert::IsTrue(actualSavedData.has_value());
-                compareJsonObjects(expectedData, *actualSavedData);
-            }
-
-            TEST_METHOD (DeviceInfoReadTemp)
-            {
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-                const std::wstring deviceId = m_defaultDeviceId;
-                DeviceInfoJSON expected{ deviceId, DeviceInfoData{ ZoneSetData{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Custom }, true, 16, 3 } };
-                const std::wstring path = data.zonesSettingsFileName + L".test_tmp";
-                JSONHelpers::SerializeDeviceInfoToTmpFile(expected, path);
-
-                data.ParseDeviceInfoFromTmpFile(path);
-
-                bool actualFileExists = std::filesystem::exists(path);
-                if (actualFileExists)
-                {
-                    std::filesystem::remove(path); //clean up before compare asserts
-                }
-                Assert::IsFalse(actualFileExists);
-
-                auto devices = data.GetDeviceInfoMap();
-                Assert::AreEqual((size_t)1, devices.size());
-
-                auto actual = devices.find(deviceId)->second;
-                Assert::AreEqual(expected.data.showSpacing, actual.showSpacing);
-                Assert::AreEqual(expected.data.spacing, actual.spacing);
-                Assert::AreEqual(expected.data.zoneCount, actual.zoneCount);
-                Assert::AreEqual((int)expected.data.activeZoneSet.type, (int)actual.activeZoneSet.type);
-                Assert::AreEqual(expected.data.activeZoneSet.uuid.c_str(), actual.activeZoneSet.uuid.c_str());
-            }
-
-            TEST_METHOD (DeviceInfoReadTempNonexistent)
-            {
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-                const std::wstring path = data.zonesSettingsFileName + L".test_tmp";
-                data.ParseDeviceInfoFromTmpFile(path);
-
-                auto devices = data.GetDeviceInfoMap();
-                Assert::AreEqual((size_t)0, devices.size());
             }
 
             TEST_METHOD (AppZoneHistoryParseSingle)
@@ -1519,64 +1539,6 @@ namespace FancyZonesUnitTests
                 compareJsonArrays(expected, actual);
             }
 
-            TEST_METHOD (CustomZoneSetsReadTemp)
-            {
-                //prepare device data
-                const std::wstring deviceId = L"default_device_id";
-
-                {
-                    DeviceInfoJSON deviceInfo{ deviceId, DeviceInfoData{ ZoneSetData{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Custom }, true, 16, 3 } };
-                    const std::wstring deviceInfoPath = m_fzData.zonesSettingsFileName + L".device_info_tmp";
-                    JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfo, deviceInfoPath);
-
-                    m_fzData.ParseDeviceInfoFromTmpFile(deviceInfoPath);
-                    std::filesystem::remove(deviceInfoPath);
-                }
-
-                const std::wstring uuid = L"{33A2B101-06E0-437B-A61E-CDBECF502906}";
-                const GridLayoutInfo grid(GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
-                    .rows = 1,
-                    .columns = 3,
-                    .rowsPercents = { 10000 },
-                    .columnsPercents = { 2500, 5000, 2500 },
-                    .cellChildMap = { { 0, 1, 2 } } }));
-                CustomZoneSetJSON expected{ uuid, CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
-
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-                const std::wstring path = data.zonesSettingsFileName + L".test_tmp";
-                json::to_file(path, CustomZoneSetJSON::ToJson(expected));
-                m_fzData.ParseCustomZoneSetFromTmpFile(path);
-
-                bool actualFileExists = std::filesystem::exists(path);
-                if (actualFileExists)
-                {
-                    std::filesystem::remove(path); //clean up before compare asserts
-                }
-                Assert::IsFalse(actualFileExists);
-
-                auto devices = m_fzData.GetCustomZoneSetsMap();
-                Assert::AreEqual((size_t)1, devices.size());
-
-                auto actual = devices.find(uuid)->second;
-                Assert::AreEqual((int)expected.data.type, (int)actual.type);
-                Assert::AreEqual(expected.data.name.c_str(), actual.name.c_str());
-                auto expectedGrid = std::get<GridLayoutInfo>(expected.data.info);
-                auto actualGrid = std::get<GridLayoutInfo>(actual.info);
-                Assert::AreEqual(expectedGrid.rows(), actualGrid.rows());
-                Assert::AreEqual(expectedGrid.columns(), actualGrid.columns());
-            }
-
-            TEST_METHOD (CustomZoneSetsReadTempNonexistent)
-            {
-                const std::wstring path = m_fzData.zonesSettingsFileName + L".test_tmp";
-                const std::wstring deviceId = L"default_device_id";
-
-                m_fzData.ParseCustomZoneSetFromTmpFile(path);
-                auto devices = m_fzData.GetDeviceInfoMap();
-                Assert::AreEqual((size_t)0, devices.size());
-            }
-
             TEST_METHOD (SetActiveZoneSet)
             {
                 FancyZonesData data;
@@ -1771,6 +1733,36 @@ namespace FancyZonesUnitTests
                 Assert::IsTrue(actual);
             }
 
+            TEST_METHOD (SaveFancyZonesDataWithTemplates)
+            {
+                FancyZonesData data;
+                data.SetSettingsModulePath(m_moduleName);
+                const auto& jsonPath = data.zonesSettingsFileName;
+
+                // json with templates
+                json::JsonObject expectedJsonObj;
+                json::JsonObject templateObj = json::JsonObject::Parse(L"{\"type\": \"focus\", \"show-spacing\": false, \"spacing\": 15, \"zone-count\": 7, \"sensitivity-radius\": 25}");
+                json::JsonArray templatesArray{};
+                templatesArray.Append(templateObj);
+                expectedJsonObj.SetNamedValue(L"devices", json::JsonArray{});
+                expectedJsonObj.SetNamedValue(L"custom-zone-sets", json::JsonArray{});
+                expectedJsonObj.SetNamedValue(L"templates", templatesArray);
+
+                // write json with templates to file
+                json::to_file(jsonPath, expectedJsonObj);
+
+                data.SaveFancyZonesData();
+
+                // verify that file was written successfully
+                Assert::IsTrue(std::filesystem::exists(jsonPath));
+
+                // verify that templates were not changed after calling SaveFancyZonesData()
+                std::wstring str;
+                std::wifstream { jsonPath, std::ios::binary } >> str;
+                json::JsonObject actualJson = json::JsonObject::Parse(str);
+                compareJsonObjects(expectedJsonObj, actualJson);
+            }
+
             TEST_METHOD (AppLastZoneIndex)
             {
                 const std::wstring deviceId = L"device-id";
@@ -1958,5 +1950,39 @@ namespace FancyZonesUnitTests
 
                 Assert::IsFalse(data.RemoveAppLastZone(nullptr, deviceId, zoneSetId));
             }
+    };
+
+    TEST_CLASS(EditorArgsUnitTests)
+    {
+        TEST_METHOD(MonitorToJson)
+        {
+            const auto deviceId = L"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
+            MonitorInfo monitor{ 144, deviceId, -10, 0, true };
+
+            const auto expectedStr = L"{\"dpi\": 144, \"monitor-id\": \"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\", \"top-coordinate\": -10, \"left-coordinate\": 0, \"is-selected\": true}";
+            const auto expected = json::JsonObject::Parse(expectedStr);
+
+            const auto actual = MonitorInfo::ToJson(monitor);
+
+            compareJsonObjects(expected, actual);
+        }
+
+        TEST_METHOD(EditorArgsToJson)
+        {
+            MonitorInfo monitor1{ 144, L"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}", -10, 0, true };
+            MonitorInfo monitor2{ 96, L"AOC2460#4&fe3a015&0&UID65793_1920_1080_{39B25DD2-130D-4B5D-8851-4791D66B1538}", 0, 1920, false };
+            EditorArgs args{
+                1, true, std::vector<MonitorInfo>{ monitor1, monitor2 }
+            };
+
+            const std::wstring expectedMonitor1 = L"{\"dpi\": 144, \"monitor-id\": \"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\", \"top-coordinate\": -10, \"left-coordinate\": 0, \"is-selected\": true}";
+            const std::wstring expectedMonitor2 = L"{\"dpi\": 96, \"monitor-id\": \"AOC2460#4&fe3a015&0&UID65793_1920_1080_{39B25DD2-130D-4B5D-8851-4791D66B1538}\", \"top-coordinate\": 0, \"left-coordinate\": 1920, \"is-selected\": false}";
+            const std::wstring expectedStr = L"{\"process-id\": 1, \"span-zones-across-monitors\": true, \"monitors\": [" + expectedMonitor1 + L", " + expectedMonitor2 + L"]}";
+            
+            const auto expected = json::JsonObject::Parse(expectedStr);
+            const auto actual = EditorArgs::ToJson(args);
+
+            compareJsonObjects(expected, actual);
+        }
     };
 }

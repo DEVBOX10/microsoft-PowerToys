@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -8,35 +8,32 @@ using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
 {
-    /// <summary>
-    /// Interaction logic for windowEditor.xaml
-    /// </summary>
     public partial class CanvasEditorWindow : EditorWindow
     {
+        private CanvasLayoutModel _model;
+        private CanvasLayoutModel _stashedModel;
+
         public CanvasEditorWindow()
         {
             InitializeComponent();
 
             KeyUp += CanvasEditorWindow_KeyUp;
 
-            _model = EditorOverlay.Current.DataContext as CanvasLayoutModel;
+            _model = App.Overlay.CurrentDataContext as CanvasLayoutModel;
             _stashedModel = (CanvasLayoutModel)_model.Clone();
+        }
+
+        public LayoutModel Model
+        {
+            get
+            {
+                return _model;
+            }
         }
 
         private void OnAddZone(object sender, RoutedEventArgs e)
         {
-            if (_offset + (int)(Settings.WorkArea.Width * 0.4) < (int)Settings.WorkArea.Width
-                && _offset + (int)(Settings.WorkArea.Height * 0.4) < (int)Settings.WorkArea.Height)
-            {
-                _model.AddZone(new Int32Rect(_offset, _offset, (int)(Settings.WorkArea.Width * 0.4), (int)(Settings.WorkArea.Height * 0.4)));
-            }
-            else
-            {
-                _offset = 100;
-                _model.AddZone(new Int32Rect(_offset, _offset, (int)(Settings.WorkArea.Width * 0.4), (int)(Settings.WorkArea.Height * 0.4)));
-            }
-
-            _offset += 50;
+            _model.AddZone();
         }
 
         protected new void OnCancel(object sender, RoutedEventArgs e)
@@ -52,9 +49,5 @@ namespace FancyZonesEditor
                 OnCancel(sender, null);
             }
         }
-
-        private int _offset = 100;
-        private CanvasLayoutModel _model;
-        private CanvasLayoutModel _stashedModel;
     }
 }

@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include <common/logger/logger.h>
+
 namespace NonLocalizable
 {
     const wchar_t SegoeUiFont[] = L"Segoe ui";
@@ -66,6 +68,7 @@ D2D1_RECT_F ZoneWindowDrawing::ConvertRect(RECT rect)
 
 ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
 {
+    HRESULT hr;
     m_window = window;
     m_renderTarget = nullptr;
     m_shouldRender = false;
@@ -73,23 +76,28 @@ ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
     // Obtain the size of the drawing area.
     if (!GetClientRect(window, &m_clientRect))
     {
+        Logger::error("couldn't initialize ZoneWindowDrawing: GetClientRect failed");
         return;
     }
 
     // Create a Direct2D render target
     // We should always use the DPI value of 96 since we're running in DPI aware mode
-    GetD2DFactory()->CreateHwndRenderTarget(
-        D2D1::RenderTargetProperties(
-            D2D1_RENDER_TARGET_TYPE_DEFAULT,
-            D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
-            96.f,
-            96.f),
-        D2D1::HwndRenderTargetProperties(
-            window,
-            D2D1::SizeU(
-                m_clientRect.right - m_clientRect.left,
-                m_clientRect.bottom - m_clientRect.top)),
-        &m_renderTarget);
+    auto renderTargetProperties = D2D1::RenderTargetProperties(
+        D2D1_RENDER_TARGET_TYPE_DEFAULT,
+        D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
+        96.f,
+        96.f);
+    
+    auto renderTargetSize = D2D1::SizeU(m_clientRect.right - m_clientRect.left, m_clientRect.bottom - m_clientRect.top);
+    auto hwndRenderTargetProperties = D2D1::HwndRenderTargetProperties(window, renderTargetSize);
+
+    hr = GetD2DFactory()->CreateHwndRenderTarget(renderTargetProperties, hwndRenderTargetProperties, &m_renderTarget);
+
+    if (!SUCCEEDED(hr))
+    {
+        Logger::error("couldn't initialize ZoneWindowDrawing: CreateHwndRenderTarget failed with {}", hr);
+        return;
+    }
 
     m_renderThread = std::thread([this]() {
         while (!m_abortThread)
@@ -213,7 +221,7 @@ void ZoneWindowDrawing::Show(unsigned animationMillis)
 
     if (!m_animation)
     {
-        ShowWindow(m_window, SW_SHOWDEFAULT);
+        ShowWindow(m_window, SW_SHOWNA);
         if (animationMillis > 0)
         {
             m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), animationMillis });
@@ -310,4 +318,9 @@ ZoneWindowDrawing::~ZoneWindowDrawing()
     }
     m_cv.notify_all();
     m_renderThread.join();
+
+    if (m_renderTarget)
+    {
+        m_renderTarget->Release();
+    }
 }

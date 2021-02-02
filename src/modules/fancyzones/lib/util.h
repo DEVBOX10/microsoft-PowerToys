@@ -1,7 +1,12 @@
 #pragma once
 
 #include "gdiplus.h"
-#include <common/string_utils.h>
+#include <common/utils/string_utils.h>
+
+namespace FancyZonesDataTypes
+{
+    struct DeviceIdData;
+}
 
 namespace FancyZonesUtils
 {
@@ -89,7 +94,7 @@ namespace FancyZonesUtils
     inline COLORREF HexToRGB(std::wstring_view hex, const COLORREF fallbackColor = RGB(255, 255, 255))
     {
         hex = left_trim<wchar_t>(trim<wchar_t>(hex), L"#");
-        
+
         try
         {
             const long long tmp = std::stoll(hex.data(), nullptr, 16);
@@ -132,6 +137,28 @@ namespace FancyZonesUtils
     }
 
     template<RECT MONITORINFO::*member>
+    std::vector<std::pair<HMONITOR, MONITORINFOEX>> GetAllMonitorInfo()
+    {
+        using result_t = std::vector<std::pair<HMONITOR, MONITORINFOEX>>;
+        result_t result;
+
+        auto enumMonitors = [](HMONITOR monitor, HDC hdc, LPRECT pRect, LPARAM param) -> BOOL {
+            MONITORINFOEX mi;
+            mi.cbSize = sizeof(mi);
+            result_t& result = *reinterpret_cast<result_t*>(param);
+            if (GetMonitorInfo(monitor, &mi))
+            {
+                result.push_back({ monitor, mi });
+            }
+
+            return TRUE;
+        };
+
+        EnumDisplayMonitors(NULL, NULL, enumMonitors, reinterpret_cast<LPARAM>(&result));
+        return result;
+    }
+
+    template<RECT MONITORINFO::*member>
     RECT GetAllMonitorsCombinedRect()
     {
         auto allMonitors = GetAllMonitorRects<member>();
@@ -157,7 +184,7 @@ namespace FancyZonesUtils
         return result;
     }
 
-    std::wstring ParseDeviceId(const std::wstring& deviceId);
+    std::wstring GetDisplayDeviceId(const std::wstring& device, std::unordered_map<std::wstring, DWORD>& displayDeviceIdxMap);
 
     UINT GetDpiForMonitor(HMONITOR monitor) noexcept;
     void OrderMonitors(std::vector<std::pair<HMONITOR, RECT>>& monitorInfo);
@@ -174,8 +201,17 @@ namespace FancyZonesUtils
     void RestoreWindowOrigin(HWND window) noexcept;
 
     bool IsValidGuid(const std::wstring& str);
+
+    std::wstring GenerateUniqueId(HMONITOR monitor, const std::wstring& devideId, const std::wstring& virtualDesktopId);
+    std::wstring GenerateUniqueIdAllMonitorsArea(const std::wstring& virtualDesktopId);
+
+    std::wstring TrimDeviceId(const std::wstring& deviceId);
+    std::optional<FancyZonesDataTypes::DeviceIdData> ParseDeviceId(const std::wstring& deviceId);
     bool IsValidDeviceId(const std::wstring& str);
 
     RECT PrepareRectForCycling(RECT windowRect, RECT zoneWindowRect, DWORD vkCode) noexcept;
     size_t ChooseNextZoneByPosition(DWORD vkCode, RECT windowRect, const std::vector<RECT>& zoneRects) noexcept;
+
+    // If HWND is already dead, we assume it wasn't elevated
+    bool IsProcessOfWindowElevated(HWND window);
 }

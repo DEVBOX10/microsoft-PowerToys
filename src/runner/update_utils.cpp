@@ -1,19 +1,24 @@
 #include "pch.h"
 
-#include <common/common.h>
 #include "Generated Files/resource.h"
 
 #include "action_runner_utils.h"
 #include "update_state.h"
 #include "update_utils.h"
 
-#include <common/timeutil.h>
+#include <common/updating/installer.h>
 #include <common/updating/updating.h>
+#include <common/utils/resources.h>
+#include <common/utils/timeutil.h>
 #include <runner/general_settings.h>
 
-extern "C" IMAGE_DOS_HEADER __ImageBase;
+auto Strings = create_notifications_strings();
 
-auto Strings = updating::notifications::strings::create();
+namespace
+{
+    constexpr int64_t UPDATE_CHECK_INTERVAL_MINUTES = 60 * 24;
+    constexpr int64_t UPDATE_CHECK_AFTER_FAILED_INTERVAL_MINUTES = 60 * 2;
+}
 
 bool start_msi_uninstallation_sequence()
 {
@@ -41,8 +46,6 @@ bool start_msi_uninstallation_sequence()
 
 void github_update_worker()
 {
-    const int64_t update_check_period_minutes = 60 * 24;
-
     for (;;)
     {
         auto state = UpdateState::read();
@@ -52,38 +55,63 @@ void github_update_worker()
             int64_t last_checked_minutes_ago = timeutil::diff::in_minutes(timeutil::now(), *state.github_update_last_checked_date);
             if (last_checked_minutes_ago < 0)
             {
-                last_checked_minutes_ago = update_check_period_minutes;
+                last_checked_minutes_ago = UPDATE_CHECK_INTERVAL_MINUTES;
             }
-            sleep_minutes_till_next_update = max(0, update_check_period_minutes - last_checked_minutes_ago);
+            sleep_minutes_till_next_update = max(0, UPDATE_CHECK_INTERVAL_MINUTES - last_checked_minutes_ago);
         }
 
-        std::this_thread::sleep_for(std::chrono::minutes(sleep_minutes_till_next_update));
+        std::this_thread::sleep_for(std::chrono::minutes{ sleep_minutes_till_next_update });
         const bool download_updates_automatically = get_general_settings().downloadUpdatesAutomatically;
+        bool update_check_ok = false;
         try
         {
-            updating::try_autoupdate(download_updates_automatically, Strings).get();
+            update_check_ok = updating::try_autoupdate(download_updates_automatically, Strings).get();
         }
         catch (...)
         {
             // Couldn't autoupdate
+            update_check_ok = false;
         }
-        UpdateState::store([](UpdateState& state) {
-            state.github_update_last_checked_date.emplace(timeutil::now());
-        });
+
+        if (update_check_ok)
+        {
+            UpdateState::store([](UpdateState& state) {
+                state.github_update_last_checked_date.emplace(timeutil::now());
+            });
+        }
+        else
+        {
+            std::this_thread::sleep_for(std::chrono::minutes{ UPDATE_CHECK_AFTER_FAILED_INTERVAL_MINUTES });
+        }
     }
 }
 
-std::wstring check_for_updates()
+std::optional<updating::github_version_info> check_for_updates()
 {
     try
     {
-        return updating::check_new_version_available(Strings).get();
+        auto version_check_result = updating::get_github_version_info_async(Strings).get();
+        if (!version_check_result)
+        {
+            updating::notifications::show_unavailable(Strings, std::move(version_check_result.error()));
+            return std::nullopt;
+        }
+
+        if (std::holds_alternative<updating::version_up_to_date>(*version_check_result))
+        {
+            updating::notifications::show_unavailable(Strings, Strings.GITHUB_NEW_VERSION_UP_TO_DATE);
+            return std::move(*version_check_result);
+        }
+
+        auto new_version = std::get<updating::new_version_download_info>(*version_check_result);
+        updating::notifications::show_available(new_version, Strings);
+        return std::move(new_version);
     }
     catch (...)
     {
         // Couldn't autoupdate
-        return std::wstring();
     }
+    return std::nullopt;
 }
 
 bool launch_pending_update()

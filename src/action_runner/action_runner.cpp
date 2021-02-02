@@ -4,12 +4,21 @@
 #include <Windows.h>
 #include <shellapi.h>
 
+#include <filesystem>
 #include <string_view>
 
-#include <common/common.h>
 #include <common/updating/updating.h>
+#include <common/updating/installer.h>
 #include <common/updating/http_client.h>
 #include <common/updating/dotnet_installation.h>
+
+#include <common/utils/elevation.h>
+#include <common/utils/process_path.h>
+#include <common/utils/resources.h>
+
+#include <common/SettingsAPI/settings_helpers.h>
+
+#include <common/logger/logger.h>
 
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Storage.h>
@@ -18,9 +27,7 @@
 #include "../runner/tray_icon.h"
 #include "../runner/action_runner_utils.h"
 
-extern "C" IMAGE_DOS_HEADER __ImageBase;
-
-auto Strings = updating::notifications::strings::create();
+auto Strings = create_notifications_strings();
 
 int uninstall_msi_action()
 {
@@ -170,7 +177,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
     std::wstring_view action{ args[1] };
 
-    if (action == L"-run-non-elevated")
+    std::filesystem::path logFilePath(PTSettingsHelper::get_root_save_folder_location());
+    logFilePath.append(LogSettings::actionRunnerLogPath);
+    Logger::init(LogSettings::actionRunnerLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+
+    if (action == RUN_NONELEVATED_CMDARG)
     {
         int nextArg = 2;
 
@@ -232,22 +243,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             }
         }
     }
-    else if (action == L"-install_dotnet")
-    {
-        if (updating::dotnet_is_installed())
-        {
-            return 0;
-        }
-        const bool success = updating::install_dotnet();
-
-        MessageBoxW(nullptr,
-                    GET_RESOURCE_STRING(IDS_DOTNET_CORE_DOWNLOAD_FAILURE).c_str(),
-                    GET_RESOURCE_STRING(IDS_DOTNET_CORE_DOWNLOAD_FAILURE_TITLE).c_str(),
-                    MB_OK | MB_ICONERROR);
-
-        return !success;
-    }
-    else if (action == L"-uninstall_msi")
+    else if (action == UNINSTALL_MSI_CMDARG)
     {
         return uninstall_msi_action();
     }

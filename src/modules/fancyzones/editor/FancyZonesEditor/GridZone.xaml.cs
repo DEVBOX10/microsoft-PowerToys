@@ -37,10 +37,10 @@ namespace FancyZonesEditor
         public double[] HorizontalSnapPoints { get; set; }
 
         private readonly Rectangle _splitter;
-        private bool _switchOrientation = false;
+        private bool _switchOrientation;
         private Point _lastPos = new Point(-1, -1);
         private Point _mouseDownPos = new Point(-1, -1);
-        private bool _inMergeDrag = false;
+        private bool _inMergeDrag;
         private Orientation _splitOrientation;
 
         private static void OnSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -59,7 +59,7 @@ namespace FancyZonesEditor
             set { SetValue(IsSelectedProperty, value); }
         }
 
-        public GridZone()
+        public GridZone(int spacing)
         {
             InitializeComponent();
             OnSelectionChanged();
@@ -69,14 +69,17 @@ namespace FancyZonesEditor
             };
             Body.Children.Add(_splitter);
 
-            ((App)Application.Current).ZoneSettings.PropertyChanged += ZoneSettings_PropertyChanged;
+            Spacing = spacing;
+            SplitterThickness = Math.Max(spacing, 1);
+
+            ((App)Application.Current).MainWindowSettings.PropertyChanged += ZoneSettings_PropertyChanged;
         }
 
         private void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == PropertyIsShiftKeyPressedID)
             {
-                _switchOrientation = ((App)Application.Current).ZoneSettings.IsShiftKeyPressed;
+                _switchOrientation = ((App)Application.Current).MainWindowSettings.IsShiftKeyPressed;
                 if (_lastPos.X != -1)
                 {
                     UpdateSplitter();
@@ -104,19 +107,9 @@ namespace FancyZonesEditor
             }
         }
 
-        private int SplitterThickness
-        {
-            get
-            {
-                Settings settings = ((App)Application.Current).ZoneSettings;
-                if (!settings.ShowSpacing)
-                {
-                    return 1;
-                }
+        private int Spacing { get; set; }
 
-                return Math.Max(settings.Spacing, 1);
-            }
-        }
+        private int SplitterThickness { get; set; }
 
         private void UpdateSplitter()
         {
@@ -282,14 +275,7 @@ namespace FancyZonesEditor
 
         private void DoSplit(Orientation orientation, double offset)
         {
-            int spacing = 0;
-            Settings settings = ((App)Application.Current).ZoneSettings;
-            if (settings.ShowSpacing)
-            {
-                spacing = settings.Spacing;
-            }
-
-            Split?.Invoke(this, new SplitEventArgs(orientation, offset, spacing));
+            Split?.Invoke(this, new SplitEventArgs(orientation, offset, Spacing));
         }
 
         private void FullSplit_Click(object sender, RoutedEventArgs e)

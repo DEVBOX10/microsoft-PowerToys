@@ -23,7 +23,7 @@ namespace FancyZonesEditor
 
         public static readonly DependencyProperty ModelProperty = DependencyProperty.Register(ObjectDependencyID, typeof(GridLayoutModel), typeof(GridEditor), new PropertyMetadata(null, OnGridDimensionsChanged));
 
-        private static int gridEditorUniqueIdCounter = 0;
+        private static int gridEditorUniqueIdCounter;
 
         private int gridEditorUniqueId;
 
@@ -32,34 +32,34 @@ namespace FancyZonesEditor
             InitializeComponent();
             Loaded += GridEditor_Loaded;
             Unloaded += GridEditor_Unloaded;
-            ((App)Application.Current).ZoneSettings.PropertyChanged += ZoneSettings_PropertyChanged;
+            ((App)Application.Current).MainWindowSettings.PropertyChanged += ZoneSettings_PropertyChanged;
             gridEditorUniqueId = ++gridEditorUniqueIdCounter;
         }
 
         private void GridEditor_Loaded(object sender, RoutedEventArgs e)
         {
             GridLayoutModel model = (GridLayoutModel)DataContext;
-            if (model != null)
+            if (model == null)
             {
-                _data = new GridData(model);
-                _dragHandles = new GridDragHandles(AdornerLayer.Children, Resizer_DragDelta, Resizer_DragCompleted);
-
-                int zoneCount = _data.ZoneCount;
-                for (int i = 0; i <= zoneCount; i++)
-                {
-                    AddZone();
-                }
+                return;
             }
+
+            _data = new GridData(model);
+            _dragHandles = new GridDragHandles(AdornerLayer.Children, Resizer_DragDelta, Resizer_DragCompleted);
+            _dragHandles.InitDragHandles(model);
 
             Model = model;
-            if (Model == null)
+            Model.PropertyChanged += OnGridDimensionsChanged;
+
+            int zoneCount = _data.ZoneCount;
+            for (int i = 0; i < zoneCount; i++)
             {
-                Model = new GridLayoutModel();
-                DataContext = Model;
+                AddZone();
             }
 
-            Model.PropertyChanged += OnGridDimensionsChanged;
-            _dragHandles.InitDragHandles(model);
+            Rect workingArea = App.Overlay.WorkArea;
+            Size actualSize = new Size(workingArea.Width, workingArea.Height);
+            ArrangeGridRects(actualSize);
         }
 
         private void GridEditor_Unloaded(object sender, RoutedEventArgs e)
@@ -69,7 +69,8 @@ namespace FancyZonesEditor
 
         private void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            Size actualSize = new Size(ActualWidth, ActualHeight);
+            Rect workingArea = App.Overlay.WorkArea;
+            Size actualSize = new Size(workingArea.Width, workingArea.Height);
 
             // Only enter if this is the newest instance
             if (actualSize.Width > 0 && gridEditorUniqueId == gridEditorUniqueIdCounter)
@@ -248,7 +249,7 @@ namespace FancyZonesEditor
                 }
 
                 _dragHandles.UpdateAfterVerticalSplit(foundCol);
-                _data.SplitColumn(foundCol, spliteeIndex, newChildIndex, space, offset, ActualWidth);
+                _data.SplitColumn(foundCol, spliteeIndex, newChildIndex, space, offset, App.Overlay.WorkArea.Width);
                 _dragHandles.AddDragHandle(Orientation.Vertical, foundRow, foundCol, model);
             }
             else
@@ -298,11 +299,12 @@ namespace FancyZonesEditor
                 }
 
                 _dragHandles.UpdateAfterHorizontalSplit(foundRow);
-                _data.SplitRow(foundRow, spliteeIndex, newChildIndex, space, offset, ActualHeight);
+                _data.SplitRow(foundRow, spliteeIndex, newChildIndex, space, offset, App.Overlay.WorkArea.Height);
                 _dragHandles.AddDragHandle(Orientation.Horizontal, foundRow, foundCol, model);
             }
 
-            Size actualSize = new Size(ActualWidth, ActualHeight);
+            var workArea = App.Overlay.WorkArea;
+            Size actualSize = new Size(workArea.Width, workArea.Height);
             ArrangeGridRects(actualSize);
         }
 
@@ -327,15 +329,17 @@ namespace FancyZonesEditor
                     zone.Visibility = Visibility.Visible;
                     return freeIndex;
                 }
+
+                zone = new GridZone(Model.ShowSpacing ? Model.Spacing : 0);
+                zone.Split += OnSplit;
+                zone.MergeDrag += OnMergeDrag;
+                zone.MergeComplete += OnMergeComplete;
+                zone.FullSplit += OnFullSplit;
+                Preview.Children.Add(zone);
+                return Preview.Children.Count - 1;
             }
 
-            zone = new GridZone();
-            zone.Split += OnSplit;
-            zone.MergeDrag += OnMergeDrag;
-            zone.MergeComplete += OnMergeComplete;
-            zone.FullSplit += OnFullSplit;
-            Preview.Children.Add(zone);
-            return Preview.Children.Count - 1;
+            return 0;
         }
 
         private void OnGridDimensionsChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -354,7 +358,8 @@ namespace FancyZonesEditor
 
         private void OnGridDimensionsChanged()
         {
-            Size actualSize = new Size(ActualWidth, ActualHeight);
+            Rect workingArea = App.Overlay.WorkArea;
+            Size actualSize = new Size(workingArea.Width, workingArea.Height);
             if (actualSize.Width > 0)
             {
                 ArrangeGridRects(actualSize);
@@ -363,8 +368,12 @@ namespace FancyZonesEditor
 
         private void ArrangeGridRects(Size arrangeSize)
         {
+            var workArea = App.Overlay.WorkArea;
+            Preview.Width = workArea.Width;
+            Preview.Height = workArea.Height;
+
             GridLayoutModel model = Model;
-            if (model == null)
+            if (model == null || _data == null)
             {
                 return;
             }
@@ -375,9 +384,7 @@ namespace FancyZonesEditor
                 return;
             }
 
-            Settings settings = ((App)Application.Current).ZoneSettings;
-
-            int spacing = settings.ShowSpacing ? settings.Spacing : 0;
+            int spacing = model.ShowSpacing ? model.Spacing : 0;
 
             _data.RecalculateZones(spacing, arrangeSize);
             _data.ArrangeZones(Preview.Children, spacing);
@@ -403,10 +410,10 @@ namespace FancyZonesEditor
                 if (_dragHandles.HasSnappedNonAdjacentResizers(resizer))
                 {
                     double spacing = 0;
-                    Settings settings = ((App)Application.Current).ZoneSettings;
-                    if (settings.ShowSpacing)
+                    GridLayoutModel model = Model;
+                    if (model.ShowSpacing)
                     {
-                        spacing = settings.Spacing;
+                        spacing = model.Spacing;
                     }
 
                     _data.SplitOnDrag(resizer, delta, spacing);
@@ -422,7 +429,8 @@ namespace FancyZonesEditor
                 }
             }
 
-            Size actualSize = new Size(ActualWidth, ActualHeight);
+            Rect workingArea = App.Overlay.WorkArea;
+            Size actualSize = new Size(workingArea.Width, workingArea.Height);
             ArrangeGridRects(actualSize);
             AdornerLayer.UpdateLayout();
         }
@@ -433,7 +441,8 @@ namespace FancyZonesEditor
             int index = _data.SwappedIndexAfterResize(resizer);
             if (index != -1)
             {
-                Size actualSize = new Size(ActualWidth, ActualHeight);
+                Rect workingArea = App.Overlay.WorkArea;
+                Size actualSize = new Size(workingArea.Width, workingArea.Height);
                 ArrangeGridRects(actualSize);
             }
         }
@@ -478,7 +487,6 @@ namespace FancyZonesEditor
             if (_startDragPos.X != -1)
             {
                 Point dragPos = e.GetPosition(Preview);
-
                 _startRow = -1;
                 _endRow = -1;
                 _startCol = -1;

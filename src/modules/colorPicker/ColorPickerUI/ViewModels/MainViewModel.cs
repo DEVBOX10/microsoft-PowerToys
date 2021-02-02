@@ -15,6 +15,7 @@ using ColorPicker.Mouse;
 using ColorPicker.Settings;
 using ColorPicker.Telemetry;
 using ColorPicker.ViewModelContracts;
+using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Telemetry;
 
 namespace ColorPicker.ViewModels
@@ -22,11 +23,6 @@ namespace ColorPicker.ViewModels
     [Export(typeof(IMainViewModel))]
     public class MainViewModel : ViewModelBase, IMainViewModel
     {
-        /// <summary>
-        /// Defined error code for "clipboard can't open"
-        /// </summary>
-        private const uint ErrorCodeClipboardCantOpen = 0x800401D0;
-
         private readonly ZoomWindowHelper _zoomWindowHelper;
         private readonly AppStateHandler _appStateHandler;
         private readonly IUserSettings _userSettings;
@@ -40,6 +36,11 @@ namespace ColorPicker.ViewModels
         /// Backing field for <see cref="ColorBrush"/>
         /// </summary>
         private Brush _colorBrush;
+
+        /// <summary>
+        /// Backing field for <see cref="ColorName"/>
+        /// </summary>
+        private string _colorName;
 
         [ImportingConstructor]
         public MainViewModel(
@@ -60,6 +61,7 @@ namespace ColorPicker.ViewModels
                 mouseInfoProvider.OnMouseWheel += MouseInfoProvider_OnMouseWheel;
             }
 
+            _userSettings.ShowColorName.PropertyChanged += (s, e) => { OnPropertyChanged(nameof(ShowColorName)); };
             keyboardMonitor?.Start();
         }
 
@@ -89,6 +91,21 @@ namespace ColorPicker.ViewModels
             }
         }
 
+        public string ColorName
+        {
+            get => _colorName;
+            private set
+            {
+                _colorName = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool ShowColorName
+        {
+            get => _userSettings.ShowColorName.Value;
+        }
+
         /// <summary>
         /// Tell the color picker that the color on the position of the mouse cursor have changed
         /// </summary>
@@ -98,6 +115,10 @@ namespace ColorPicker.ViewModels
         {
             ColorBrush = new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B));
             ColorText = ColorRepresentationHelper.GetStringRepresentation(color, _userSettings.CopiedColorRepresentation.Value);
+            if (_userSettings.ShowColorName.Value)
+            {
+                ColorName = ColorNameHelper.GetColorName(color);
+            }
         }
 
         /// <summary>
@@ -107,41 +128,29 @@ namespace ColorPicker.ViewModels
         /// <param name="p">The current <see cref="System.Drawing.Point"/> of the mouse cursor</param>
         private void MouseInfoProvider_OnMouseDown(object sender, System.Drawing.Point p)
         {
-            CopyToClipboard(ColorText);
+            ClipboardHelper.CopyToClipboard(ColorText);
+
+            _userSettings.ColorHistory.Insert(0, GetColorString());
+
+            if (_userSettings.ColorHistory.Count > _userSettings.ColorHistoryLimit.Value)
+            {
+                _userSettings.ColorHistory.RemoveAt(_userSettings.ColorHistory.Count - 1);
+            }
 
             _appStateHandler.HideColorPicker();
+
+            if (_userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenColorPickerAndThenEditor || _userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenEditor)
+            {
+                _appStateHandler.ShowColorPickerEditor();
+            }
+
             PowerToysTelemetry.Log.WriteEvent(new ColorPickerShowEvent());
         }
 
-        /// <summary>
-        /// Copy the given text to the Windows clipboard
-        /// </summary>
-        /// <param name="text">The text to copy to the Windows clipboard</param>
-        private static void CopyToClipboard(string text)
+        private string GetColorString()
         {
-            if (string.IsNullOrEmpty(text))
-            {
-                return;
-            }
-
-            // nasty hack - sometimes clipboard can be in use and it will raise and exception
-            for (var i = 0; i < 10; i++)
-            {
-                try
-                {
-                    Clipboard.SetText(text);
-                    break;
-                }
-                catch (COMException ex)
-                {
-                    if ((uint)ex.ErrorCode != ErrorCodeClipboardCantOpen)
-                    {
-                        Logger.LogError("Failed to set text into clipboard", ex);
-                    }
-                }
-
-                Thread.Sleep(10);
-            }
+            var color = ((SolidColorBrush)ColorBrush).Color;
+            return color.A + "|" + color.R + "|" + color.G + "|" + color.B;
         }
 
         /// <summary>

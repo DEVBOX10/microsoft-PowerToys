@@ -1,14 +1,20 @@
 #include "pch.h"
 #include <interface/powertoy_module_interface.h>
-#include <common/settings_objects.h>
-#include <common/common.h>
-#include <common/shared_constants.h>
+#include <common/SettingsAPI/settings_objects.h>
+#include <common/interop/shared_constants.h>
 #include "trace.h"
 #include "Generated Files/resource.h"
-#include <common/os-detect.h>
 #include <launcher\Microsoft.Launcher\LauncherConstants.h>
+#include <common/logger/logger.h>
+#include <common/SettingsAPI/settings_helpers.h>
 
-extern "C" IMAGE_DOS_HEADER __ImageBase;
+#include <common/utils/elevation.h>
+#include <common/utils/process_path.h>
+#include <common/utils/resources.h>
+#include <common/utils/os-detect.h>
+#include <common/utils/winapi_error.h>
+
+#include <filesystem>
 
 namespace
 {
@@ -81,6 +87,10 @@ public:
     {
         app_name = GET_RESOURCE_STRING(IDS_LAUNCHER_NAME);
         app_key = LauncherConstants::ModuleKey;
+        std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(this->app_key));
+        logFilePath.append(LogSettings::launcherLogPath);
+        Logger::init(LogSettings::launcherLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+        Logger::info("Launcher object is constructing");
         init_settings();
 
         SECURITY_ATTRIBUTES sa;
@@ -92,6 +102,7 @@ public:
 
     ~Microsoft_Launcher()
     {
+        Logger::info("Launcher object is destroying");
         if (m_enabled)
         {
             terminateProcess();
@@ -172,6 +183,7 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
+        Logger::info("Launcher is enabling");
         ResetEvent(m_hEvent);
         // Start PowerLauncher.exe only if the OS is 19H1 or higher
         if (UseNewSettings())
@@ -243,6 +255,7 @@ public:
     // Disable the powertoy
     virtual void disable()
     {
+        Logger::info("Launcher is disabling");
         if (m_enabled)
         {
             ResetEvent(m_hEvent);
@@ -284,10 +297,11 @@ public:
         {
             if (WaitForSingleObject(m_hProcess, 0) == WAIT_OBJECT_0)
             {
-                // The process exited, restart it
+                Logger::warn("PowerToys Run has exited unexpectedly, restarting PowerToys Run.");
                 enable();
             }
 
+            Logger::trace("Set POWER_LAUNCHER_SHARED_EVENT");
             SetEvent(m_hEvent);
             return true;
         }
@@ -311,7 +325,12 @@ public:
     void terminateProcess()
     {
         DWORD processID = GetProcessId(m_hProcess);
-        TerminateProcess(m_hProcess, 1);
+        if (TerminateProcess(m_hProcess, 1) == 0)
+        {
+            auto err = get_last_error_message(GetLastError());
+            Logger::error(L"Launcher process was not terminated. {}", err.has_value() ? err.value() : L"");
+        }
+
         // Temporarily disable sending a message to close
         /*
         EnumWindows(&requestMainWindowClose, processID);
@@ -343,18 +362,36 @@ void Microsoft_Launcher::init_settings()
 
 void Microsoft_Launcher::parse_hotkey(PowerToysSettings::PowerToyValues& settings)
 {
-    try
+    auto settingsObject = settings.get_raw_json();
+    if (settingsObject.GetView().Size())
     {
-        auto jsonHotkeyObject = settings.get_raw_json().GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_OPEN_POWERLAUNCHER);
-        m_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
-        m_hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
-        m_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
-        m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
-        m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+        try
+        {
+            auto jsonHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_OPEN_POWERLAUNCHER);
+            m_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
+            m_hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
+            m_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
+            m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
+            m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+        }
+        catch(...)
+        {
+            Logger::error("Failed to initialize PT Run start shortcut");
+        }
     }
-    catch (...)
+    else
     {
-        m_hotkey.key = 0;
+        Logger::info("PT Run settings are empty");
+    }
+
+    if (!m_hotkey.key)
+    {
+        Logger::info("PT Run is going to use default shortcut");
+        m_hotkey.win = false;
+        m_hotkey.alt = true;
+        m_hotkey.shift = false;
+        m_hotkey.ctrl = false;
+        m_hotkey.key = VK_SPACE;
     }
 }
 

@@ -1,7 +1,6 @@
 #include "pch.h"
 
-#include <common/common.h>
-#include <common/on_thread_executor.h>
+#include <common/logger/logger.h>
 
 #include "FancyZonesData.h"
 #include "FancyZonesDataTypes.h"
@@ -9,6 +8,7 @@
 #include "ZoneWindowDrawing.h"
 #include "trace.h"
 #include "util.h"
+#include "on_thread_executor.h"
 #include "Settings.h"
 
 #include <ShellScalingApi.h>
@@ -24,44 +24,6 @@ namespace NonLocalizable
 }
 
 using namespace FancyZonesUtils;
-
-namespace ZoneWindowUtils
-{
-    std::wstring GenerateUniqueId(HMONITOR monitor, const std::wstring& deviceId, const std::wstring& virtualDesktopId)
-    {
-        MONITORINFOEXW mi;
-        mi.cbSize = sizeof(mi);
-        if (!virtualDesktopId.empty() && GetMonitorInfo(monitor, &mi))
-        {
-            Rect const monitorRect(mi.rcMonitor);
-            // Unique identifier format: <parsed-device-id>_<width>_<height>_<virtual-desktop-id>
-            return ParseDeviceId(deviceId) +
-                   L'_' +
-                   std::to_wstring(monitorRect.width()) +
-                   L'_' +
-                   std::to_wstring(monitorRect.height()) +
-                   L'_' +
-                   virtualDesktopId;
-        }
-        return {};
-    }
-
-    std::wstring GenerateUniqueIdAllMonitorsArea(const std::wstring& virtualDesktopId)
-    {
-        std::wstring result{ ZonedWindowProperties::MultiMonitorDeviceID };
-
-        RECT combinedResolution = GetAllMonitorsCombinedRect<&MONITORINFO::rcMonitor>();
-
-        result += L'_';
-        result += std::to_wstring(combinedResolution.right - combinedResolution.left);
-        result += L'_';
-        result += std::to_wstring(combinedResolution.bottom - combinedResolution.top);
-        result += L'_';
-        result += virtualDesktopId;
-
-        return result;
-    }
-}
 
 struct ZoneWindow : public winrt::implements<ZoneWindow, IZoneWindow>
 {
@@ -158,8 +120,7 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
         {
             return false;
         }
-        const UINT dpi = GetDpiForMonitor(m_monitor);
-        workAreaRect = Rect(mi.rcWork, dpi);
+        workAreaRect = Rect(mi.rcWork);
     }
     else
     {
@@ -179,6 +140,9 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
     }
 
     MakeWindowTransparent(m_window.get());
+    // According to ShowWindow docs, we must call it with SW_SHOWNORMAL the first time
+    ShowWindow(m_window.get(), SW_SHOWNORMAL);
+    ShowWindow(m_window.get(), SW_HIDE);
 
     m_zoneWindowDrawing = std::make_unique<ZoneWindowDrawing>(m_window.get());
 
@@ -234,7 +198,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnable
     {
         m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_host);
     }
-    
+
     return S_OK;
 }
 
@@ -428,7 +392,7 @@ void ZoneWindow::CalculateZoneSet() noexcept
 
     const auto& activeZoneSet = deviceInfoData->activeZoneSet;
 
-    if (activeZoneSet.uuid.empty() || activeZoneSet.type == FancyZonesDataTypes::ZoneSetLayoutType::Blank)
+    if (activeZoneSet.uuid.empty())
     {
         return;
     }
