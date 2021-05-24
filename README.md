@@ -1,8 +1,8 @@
-# Welcome to the Microsoft PowerToys repo
+# Microsoft PowerToys
 
 <img src="./doc/images/overview/PT%20hero%20image.png"/>
 
-[Downloads & Release notes][github-release-link] | [Contributing to PowerToys](#contributing) | [What's Happening](#whats-happening) | [Roadmap](#powertoys-roadmap) |  [Known issues](#known-issues)
+[Downloads & Release notes][github-release-link] | [Contributing to PowerToys](#contributing) | [What's Happening](#whats-happening) | [Roadmap](#powertoys-roadmap)
 
 ## Build status
 
@@ -14,8 +14,8 @@
 
 Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity. For more info on [PowerToys overviews and guides][usingPowerToys-docs-link], or any other tools and resources for [Windows development environments](https://docs.microsoft.com/windows/dev-environment/overview), head over to [docs.microsoft.com][usingPowerToys-docs-link]! 
 
-|   | Current utilities: |   |
-|--------------|--------|--------|
+|              | Current utilities: |              |
+|--------------|--------------------|--------------|
 | [Color Picker](https://aka.ms/PowerToysOverview_ColorPicker) |  [FancyZones](https://aka.ms/PowerToysOverview_FancyZones) | [File Explorer Add-ons](https://aka.ms/PowerToysOverview_FileExplorerAddOns) |
 | [Image Resizer](https://aka.ms/PowerToysOverview_ImageResizer) | [Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager) | [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) |
 | [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) | [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [Video Conference Mute (Experimental)](https://aka.ms/PowerToysOverview_VideoConference) |
@@ -24,22 +24,23 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 ### Requirements
 
-- Windows 10 v1903 (build 18362) or better preferred, Windows 10 v1803 (build 17134) minimum.  
-- Have [.NET Core 3.1 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-desktop-3.1.10-windows-x64-installer). The installer should handle this but we want to directly make people aware.
+- Windows 10 v1903 (build 18362) or newer.
+   - ⚠️ PowerToys minimum version of Windows 10 is v1903 starting with the 0.37 release
+- Have [.NET Core 3.1.14 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-desktop-3.1.14-windows-x64-installer). The installer should handle this but we want to directly make people aware.
 
 ### Via GitHub with EXE [Recommended]
 
 #### Stable version
 
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.29.3-x64.exe` to download the PowerToys installer.
+Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.37.2-x64.exe` to download the PowerToys installer.
 
 This is our preferred method.
 
 #### Experimental version
-To install the Video Conference mute, please use the [v0.28 pre-release experimental version of PowerToys][github-prerelease-link] to try out this version. It includes all improvements from v0.27 in addition to the Video conference utility. Click on `Assets` to show the files available in the release and then download the .exe installer.
+To install the Video Conference mute, please use the [v0.36 experimental version of PowerToys][github-prerelease-link] to try out this version. It includes all improvements from v0.35 in addition to the Video conference utility. Click on `Assets` to show the files available in the release and then download the .exe installer.
 
 ### Via WinGet (Preview)
-Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli/releases). To install PowerToys, run the following command from the command line / PowerShell:
+Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli#installing-the-client). To install PowerToys, run the following command from the command line / PowerShell:
 
 ```powershell
 WinGet install powertoys
@@ -73,65 +74,75 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.29 - December 2020 Update
+### 0.37 - April 2021 Update
 
-Our goals for [v0.29 release cycle][github-release-link] were to focus on adding on end-user experience, stability, accessibility, localization and quality of life improvements for both the development team and our end users. Due to the short dev cycle due to the holidays this month, larger work items will show up next release such as FZ editor improvements and three new plug-ins for PowerToys Run (service, regkey, system commands).
+Our goals for [v0.37 release cycle](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F19) Video Conference Mute work so we can bring it into the stable branch, general bug fixes, moving Keyboard manager out, and removing the legacy settings app.
 
-Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on for the near future. We fixed a lot of localization issues from our initial release but we may not still be perfect. If you find an issue, please file a [localization bug][loc-bug].
+The 0.36 experimental release was released this month as well which includes Video Conference Mute which is based off the 0.35 code base.
 
-#### Highlights from v0.29
+Our [prioritized roadmap][roadmap] of features and utilities will dictate what the core team is focusing on for the near future. 
+
+#### Highlights from v0.37
 
 **General**
-- Bug report tool and improved logging.
-- Various localization improvements. 
-- CodeQL added.  Triggered via a cron timer twice a day.
-- "How to use" docs moved to https://docs.microsoft.com/windows/powertoys/
-   - This will allow the community to do direct PRs against those documents
 
-**ARM64 Progress**
-- .NET Core upgrade for code bases the PowerToys team controls is complete.  We still have two external dependencies that are .NET Framework that need to be updated.
+- PowerToys now requires Windows 10, version 1903 or higher
+- FancyZones editor default launching key is <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>`</kbd>
+   - Windows Terminal's new Quake mode will use <kbd>Win</kbd>+<kbd>`</kbd>.  We feel this is a far better use of the keystroke. 
+   - Current PowerToys users can update this in our settings in the FancyZone section.
+- Removed our v1 HTML based settings system
 
-**Color Picker** 
-- General bug fixes
-- Added ability to provide the name of the color at parity with Office and WinUI Color Picker.
+## New Spec - Feedback please!
 
-**FancyZones**
-- Allows to use Windows Snap on desktops that don't have a layout applied and for apps that are in the excluded list.
-- Bug fixes
+- What is new in PowerToys (SCOOBE) - [Pull Request](https://github.com/microsoft/PowerToys/pull/10978)
 
-**PowerToys Run**
-- Improved performance
-- PT Run now supports accented characters.
+### FancyZones
+- Editor UX bug fixes. Thanks [@niels9001](https://github.com/niels9001)
+- Monitor resolution is added to the top to directly infer the boxes on top are your monitors
+- Fix for editor crash when editing a custom layout
 
-**Installer**
-   - Option to extract the MSI from the .exe for enterprise scenarios and more options to do unattended installations.
-   - Removed toast notifications during installation.
+### PowerRename
+- Option added for capitalization.  
+- Improved loading responsiveness with large sums of files.
+
+### PowerToys Run
+- Changed XAML to improve rendering. Thanks [@niels9001](https://github.com/niels9001)
+- Disabled plugins are no longer loaded
+- VS Code plugin workspaces showing up now.  Thanks [@ricardosantos9521](https://github.com/ricardosantos9521)
+
+### Keyboard manager 
+- Now an independent exe.  This now runs high priority in its own process.  When your CPU is under load, this should allow the process to continue to be prioritized
+
+### Color Picker 
+- uses a centralized keyhook.  This should improve activation
+- Esc for closing will no longer bubble through.  Thanks [@DoctorNefario](https://github.com/DoctorNefario)
+
+### Settings / Welcome to PowerToys
+- Shortcuts will stand out more
+- Few accessability bugs fixed. Thanks [@niels9001](https://github.com/niels9001)
+
+### Shortcut Guide
+- Excluded apps for Shortcut Guide.  Thanks [@davidegiacometti ](https://github.com/davidegiacometti)
+
+### Installer
+- new arg for starting PT after silent install
+
+### Developer quality of life
+- Ability to directly debug against Settings
+
+## Community contributions
 
 We'd like to directly mention (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software.  
 
-[@Aaron-Junker](https://github.com/Aaron-Junker), 
-[@benjamhooper](https://github.com/benjamhooper), 
-[@davidegiacometti](https://github.com/davidegiacometti), 
-[@eriawan](https://github.com/eriawan), 
-[@htcfreek](https://github.com/htcfreek), 
-[@jay-o-way](https://github.com/jay-o-way), 
-[@jhutchings1](https://github.com/jhutchings1), 
-[@jsoref](https://github.com/jsoref), 
-[@martinchrzan](https://github.com/martinchrzan), 
-[@niels9001](https://github.com/niels9001), 
-[@riverar](https://github.com/riverar), 
-[@snickler](https://github.com/snickler), 
-and 
-[@TobiasSekan](https://github.com/TobiasSekan) 
+[@Aaron-Junker](https://github.com/Aaron-Junker), [@addrum](https://github.com/addrum), [@davidegiacometti ](https://github.com/davidegiacometti), [@DoctorNefario](https://github.com/DoctorNefario), [@htcfreek](https://github.com/htcfreek), [@Jay-o-Way](https://github.com/Jay-o-Way), [@niels9001](https://github.com/niels9001), and [@ricardosantos9521](https://github.com/ricardosantos9521)
 
-#### What is being planned for v0.31 - January 2021
+#### What is being planned for v0.39 - May 2021
 
-For [v0.31][github-next-release-work], we are proactively working on:
+For [v0.39][github-next-release-work], we are planning to work on:
 
-- Stability
-- ARM64 work
-- Video conference mute investigation toward a DirectShow filter versus a driver
-- OOBE work
+- Stability and bug fixes
+- Improving VCM
+- Moving Shortcutguide out of the main exe
 
 ## PowerToys Community
 
@@ -156,5 +167,5 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [usingPowerToys-docs-link]: https://docs.microsoft.com/windows/powertoys/
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F16
-[github-prerelease-link]: https://github.com/microsoft/PowerToys/releases/tag/v0.28.0
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F20
+[github-prerelease-link]: https://github.com/microsoft/PowerToys/releases/tag/v0.36.0

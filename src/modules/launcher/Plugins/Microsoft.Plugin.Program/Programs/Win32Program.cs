@@ -66,7 +66,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         public static IFile FileWrapper { get; set; } = new FileSystem().File;
 
-        public static IShellLinkHelper Helper { get; set; } = new ShellLinkHelper();
+        public static IShellLinkHelper ShellLinkHelper { get; set; } = new ShellLinkHelper();
 
         public static IDirectoryWrapper DirectoryWrapper { get; set; } = new DirectoryWrapper();
 
@@ -294,7 +294,7 @@ namespace Microsoft.Plugin.Program.Programs
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ =>
                     {
-                        Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", ParentDirectory));
+                        Helper.OpenInShell(ParentDirectory);
                         return true;
                     },
                 });
@@ -344,6 +344,7 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Any error in CreateWin32Program should not prevent other programs from loading.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "User facing path needs to be shown in lowercase.")]
         private static Win32Program CreateWin32Program(string path)
         {
             try
@@ -354,8 +355,8 @@ namespace Microsoft.Plugin.Program.Programs
                     ExecutableName = Path.GetFileName(path),
                     IcoPath = path,
 
-                    // Using CurrentCulture since this is user facing
-                    FullPath = path.ToLower(CultureInfo.CurrentCulture),
+                    // Using InvariantCulture since this is user facing
+                    FullPath = path.ToLowerInvariant(),
                     UniqueIdentifier = path,
                     ParentDirectory = Directory.GetParent(path).FullName,
                     Description = string.Empty,
@@ -465,6 +466,7 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Unsure of what exceptions are caught here while enabling static analysis")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "User facing path needs to be shown in lowercase.")]
         private static Win32Program LnkProgram(string path)
         {
             try
@@ -473,7 +475,7 @@ namespace Microsoft.Plugin.Program.Programs
                 const int MAX_PATH = 260;
                 StringBuilder buffer = new StringBuilder(MAX_PATH);
 
-                string target = Helper.RetrieveTargetPath(path);
+                string target = ShellLinkHelper.RetrieveTargetPath(path);
 
                 if (!string.IsNullOrEmpty(target))
                 {
@@ -481,11 +483,11 @@ namespace Microsoft.Plugin.Program.Programs
                     {
                         program.LnkResolvedPath = program.FullPath;
 
-                        // Using CurrentCulture since this is user facing
-                        program.FullPath = Path.GetFullPath(target).ToLower(CultureInfo.CurrentCulture);
+                        // Using InvariantCulture since this is user facing
+                        program.FullPath = Path.GetFullPath(target).ToLowerInvariant();
                         program.AppType = GetAppTypeFromPath(target);
 
-                        var description = Helper.Description;
+                        var description = ShellLinkHelper.Description;
                         if (!string.IsNullOrEmpty(description))
                         {
                             program.Description = description;
@@ -693,10 +695,11 @@ namespace Microsoft.Plugin.Program.Programs
             return files;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "User facing path needs to be shown in lowercase.")]
         private static string Extension(string path)
         {
-            // Using CurrentCulture since this is user facing
-            var extension = Path.GetExtension(path)?.ToLower(CultureInfo.CurrentCulture);
+            // Using InvariantCulture since this is user facing
+            var extension = Path.GetExtension(path)?.ToLowerInvariant();
 
             if (!string.IsNullOrEmpty(extension))
             {
