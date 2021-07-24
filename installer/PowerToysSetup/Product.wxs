@@ -8,9 +8,11 @@
   <?define KeyboardManagerProjectName="KeyboardManager"?>
   <?define PowerRenameProjectName="PowerRename"?>
   <?define ColorPickerProjectName="ColorPicker"?>
+  <?define VideoConferenceProjectName="VideoConference"?>
   <?define AwakeProjectName="Awake"?>
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
+  <?define BinX32Dir="$(var.RepoDir)x86\$(var.Configuration)\" ?>
   <?define BinX64Dir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
   <?define ShortcutGuideExecutable=$(var.BinX64Dir)\modules\ShortcutGuide\ShortcutGuide?>
   <?define ShortcutGuideModuleInterface=$(var.BinX64Dir)\modules\ShortcutGuide\ShortcutGuideModuleInterface?>
@@ -218,6 +220,10 @@
                 </Directory>
                 <Directory Id="ShortcutGuideModuleInterfaceInstallFolder" Name="ShortcutGuideModuleInterface"/>
                 </Directory>
+            <!-- TODO(yuyoyuppe): uncomment when VCM should be enabled                 -->
+            <!-- <Directory Id="VideoConferenceInstallFolder" Name="$(var.VideoConferenceProjectName)">
+              <Directory Id="VideoConferenceIconsFolder" Name="Icons" />
+            </Directory>                 -->
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview" />
             <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
             <Directory Id="AwakeInstallFolder" Name="$(var.AwakeProjectName)">
@@ -418,11 +424,12 @@
     <!-- FancyZone -->
     <DirectoryRef Id="FancyZonesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
       <Component Id="Module_FancyZones" Guid="C6B5272E-6ED4-4B80-B0E7-2FF0355D8CF4" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\fancyzones.dll" KeyPath="yes" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesModuleInterface.dll" KeyPath="yes" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.runtimeconfig.json" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.deps.json" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.exe" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.FancyZones.exe" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ControlzEx.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\Microsoft.Xaml.Behaviors.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ModernWpf.dll" />
@@ -440,6 +447,9 @@
     <DirectoryRef Id="ToolsFolder">
       <Component Id="BugReportTool_exe" Guid="0F8E3E9F-2E86-4660-A3BF-AE4DD431B93C" Win64="yes">
         <File Source="$(var.BinX64Dir)BugReportTool\BugReportTool.exe" Id="BugReportTool.exe" KeyPath="yes" Checksum="yes" />
+      </Component>
+      <Component Id="WebcamReportTool_exe" Guid="B6005DAC-8C26-4865-91B3-99F098422C13" Win64="yes">
+        <File Source="$(var.BinX64Dir)WebcamReportTool\WebcamReportTool.exe" Id="WebcamReportTool.exe" Checksum="yes" />
       </Component>
     </DirectoryRef>
 
@@ -636,6 +646,37 @@
       </Component>
     </DirectoryRef>
 
+    <!-- TODO(yuyoyuppe): uncomment when VCM should be enabled -->
+    <!-- <DirectoryRef Id="VideoConferenceInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\">
+     <Component Id="Module_VideoConference" Guid="5996527a-40fc-432e-b3ac-abc0b4bd3887" Win64="yes">
+      <Condition>WINDOWSBUILDNUMBER >= 18362</Condition>
+      <File SelfRegCost="1" Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceProxyFilter_x64.dll" KeyPath="yes">
+        <Class Id="{31AD75E9-8C3A-49C8-B9ED-5880D6B4A764}" Context="InprocServer32" ThreadingModel="apartment" Description="PowerToys VideoConference Mute" />
+      </File>
+      <File SelfRegCost="1" Source="$(var.BinX32Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceProxyFilter_x86.dll">
+        <Class Id="{31AD75E9-8C3A-49C8-B9ED-5880D6B4A732}" Context="InprocServer32" ThreadingModel="apartment" Description="PowerToys VideoConference Mute" />
+      </File>
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceModule.dll" />
+     </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="VideoConferenceIconsFolder" FileSource="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons">
+     <Component Id="Module_VideoConferenceIcons" Guid="5996527a-40fc-432e-b34c-abc0b4bd3887" Win64="yes">
+      <Condition>WINDOWSBUILDNUMBER >= 18362</Condition>
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-NotInUse Dark.png" />
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-NotInUse Light.png" />
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-Off Dark.png" />
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-Off Light.png" />
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-On Dark.png" />
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-On Light.png" />
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-NotInUse Dark.png" />
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-NotInUse Light.png" />
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-Off Light.png" />
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-Off Dark.png" />
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-On Dark.png" />
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-On Light.png" />
+     </Component>
+    </DirectoryRef> -->
+
     <DirectoryRef Id="ShortcutGuideExecutableInstallFolder" FileSource="$(var.ShortcutGuideExecutable)">
       <Component Id="Module_ShortcutGuideExecutable" Guid="DA6E5710-F1DF-44EB-A316-300FA39544E9" Win64="yes">
         <File Source="$(var.ShortcutGuideExecutable)\PowerToys.ShortcutGuide.exe" KeyPath="yes" />
@@ -790,7 +831,7 @@
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2AssetsModulesInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\Modules">
       <Component Id="SettingsV2AssetsModules" Guid="A0B961A9-77D0-4223-88A9-E3B41BD9C329" Win64="yes">
-        <?foreach File in ColorPicker.png;FancyZones.png;Awake.png;ImageResizer.png;KBM.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ShortcutGuide.png?>
+        <?foreach File in ColorPicker.png;FancyZones.png;Awake.png;ImageResizer.png;KBM.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ShortcutGuide.png;VideoConference.png?>
           <File Id="SettingsV2AssetsModules_$(var.File)" Source="$(var.BinX64Dir)Settings\Assets\Modules\$(var.File)" />
         <?endforeach?>
       </Component>
@@ -881,6 +922,9 @@
       <ComponentRef Id="ShortcutGuideSvgs" />
       <ComponentRef Id="Module_ShortcutGuideModuleInterface" />
       <ComponentRef Id="Module_ShortcutGuideExecutable" />
+      <!-- TODO(yuyoyuppe): uncomment when VCM should be enabled -->
+      <!-- <ComponentRef Id="Module_VideoConference" />
+      <ComponentRef Id="Module_VideoConferenceIcons" /> -->
       <ComponentRef Id="Module_FancyZones" />
       <ComponentRef Id="DesktopShortcut" />
       <ComponentRef Id="Module_PowerRename" />
@@ -910,6 +954,7 @@
     </ComponentGroup>
     <ComponentGroup Id="ToolComponents" Directory="ToolsFolder">
       <ComponentRef Id="BugReportTool_exe" />
+      <ComponentRef Id="WebcamReportTool_exe" />
     </ComponentGroup>
   </Fragment>
 
@@ -1030,7 +1075,7 @@
 
       <Component Id="launcherInstallComponent" Directory="LauncherInstallFolder" Guid="5E688DB4-C522-4268-BA54-ED1CDFFE9DB6">
         <File Source="$(var.BinX64Dir)modules\Launcher\Microsoft.Launcher.dll" />
-        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;ManagedTelemetry.dll;PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;ManagedCommon.dll;System.IO.Abstractions.dll;Microsoft.PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll?>
+        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;ManagedTelemetry.dll;PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;ManagedCommon.dll;System.IO.Abstractions.dll;Microsoft.PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\$(var.File)" />
         <?endforeach?>
         <File Source="$(var.BinX64Dir)Settings\Microsoft.PowerToys.Settings.UI.Lib.dll" />

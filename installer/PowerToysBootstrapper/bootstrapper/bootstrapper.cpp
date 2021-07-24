@@ -168,6 +168,8 @@ int Bootstrapper(HINSTANCE hInstance)
         defaultInstallDir += "\\PowerToys";
     }
 
+    fs::path logDir = PTSettingsHelper::get_root_save_folder_location();
+
     cxxopts::Options options{ "PowerToysBootstrapper" };
 
     // clang-format off
@@ -179,7 +181,7 @@ int Bootstrapper(HINSTANCE hInstance)
     ("start_pt", "Always launch PowerToys after the installation is complete")
     ("skip_dotnet_install", "Skip dotnet 3.X installation even if it's not detected")
     ("log_level", "Log level. Possible values: off|debug|error", cxxopts::value<std::string>()->default_value("off"))
-    ("log_dir", "Log directory", cxxopts::value<std::string>()->default_value("."))
+    ("log_dir", "Log directory", cxxopts::value<std::string>()->default_value(logDir.string()))
     ("install_dir", "Installation directory", cxxopts::value<std::string>()->default_value(defaultInstallDir))
     ("extract_msi", "Extract MSI to the working directory and exit. Use only if you must access MSI directly.");
     // clang-format on
@@ -232,7 +234,6 @@ int Bootstrapper(HINSTANCE hInstance)
         installFolderProp = L"INSTALLFOLDER=" + installFolderProp;
     }
 
-    fs::path logDir = ".";
     try
     {
         fs::path logDirArgPath = logDirArg;
@@ -406,25 +407,39 @@ int Bootstrapper(HINSTANCE hInstance)
     {
         if (installDotnet)
         {
-            spdlog::debug("Detecting if dotnet is installed");
-            const bool dotnetInstalled = updating::dotnet_is_installed();
-            spdlog::debug("Dotnet is already installed: {}", dotnetInstalled);
-            if (!dotnetInstalled)
+            auto dotnet3Info = std::make_tuple(VersionHelper{ 3, 1, 15 },
+                                               L"https://download.visualstudio.microsoft.com/download/pr/d30352fe-d4f3-4203-91b9-01a3b66a802e/bb416e6573fa278fec92113abefc58b3/windowsdesktop-runtime-3.1.15-win-x64.exe");
+            auto dotnet5Info = std::make_tuple(VersionHelper{ 5, 0, 7 },
+                                               L"https://download.visualstudio.microsoft.com/download/pr/2b83d30e-5c86-4d37-a1a6-582e22ac07b2/c7b1b7e21761bbfb7b9951f5b258806e/windowsdesktop-runtime-5.0.7-win-x64.exe");
+
+            const std::array dotnetsToInstall = { std::move(dotnet3Info), std::move(dotnet5Info) };
+
+            for (const auto& [ver, downloadLink] : dotnetsToInstall)
             {
+                const auto& [major, minor, minimalRequiredPatch] = ver;
+                spdlog::debug("Detecting if dotnet {} is installed", ver.toString());
+                const bool dotnetInstalled = updating::dotnet_is_installed(major, minor, minimalRequiredPatch);
+
+                if (dotnetInstalled)
+                {
+                    spdlog::debug("Dotnet {} is already installed: {}", ver.toString(), dotnetInstalled);
+                    continue;
+                }
+
                 bool installedSuccessfully = false;
-                if (const auto dotnet_installer_path = updating::download_dotnet())
+                if (const auto dotnetInstallerPath = updating::download_dotnet(downloadLink))
                 {
                     // Dotnet installer has its own progress bar
                     CloseProgressBarDialog();
-                    installedSuccessfully = updating::install_dotnet(*dotnet_installer_path, g_Silent);
+                    installedSuccessfully = updating::install_dotnet(*dotnetInstallerPath, g_Silent);
                     if (!installedSuccessfully)
                     {
-                        spdlog::error("Couldn't install dotnet");
+                        spdlog::error("Couldn't install dotnet {}", ver.toString());
                     }
                 }
                 else
                 {
-                    spdlog::error("Couldn't download dotnet");
+                    spdlog::error("Couldn't download dotnet {}", ver.toString());
                 }
 
                 if (!installedSuccessfully)
