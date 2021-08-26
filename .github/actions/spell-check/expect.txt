@@ -15,6 +15,7 @@ accessibilityinsights
 Acl
 aclapi
 AColumn
+Accessible
 acos
 acrt
 Actioncenter
@@ -227,6 +228,7 @@ CHECKCANCELED
 CHILDACTIVATE
 CHILDWINDOW
 chrdavis
+chrisharris
 chrono
 Chrzan
 chrzan
@@ -269,6 +271,7 @@ codereview
 Codespaces
 COINIT
 colorconv
+colorformat
 colorhistory
 colorhistorylimit
 COLORKEY
@@ -653,6 +656,7 @@ formatetc
 FPower
 FRAMECHANGED
 FRAMEDOWNLOAD
+franky
 Froml
 fstream
 ftps
@@ -664,6 +668,7 @@ Functiondiscoverykeys
 fwlink
 fwrite
 fxcop
+FZE
 gabime
 GAC
 gacutil
@@ -1298,8 +1303,10 @@ mscorlib
 msdata
 MSDN
 msedge
+MSGFLT
 mshtmdid
 msi
+MSIFASTINSTALL
 MSIHANDLE
 MSIINSTALLER
 MSIL
@@ -1913,6 +1920,7 @@ Soref
 SORTDOWN
 SOURCECLIENTAREAONLY
 SOURCEHEADER
+spamming
 spdisp
 spdlog
 spdo
@@ -2032,6 +2040,7 @@ syslog
 SYSMENU
 systemd
 SYSTEMTIME
+systray
 Tadele
 tadele
 Tahoma
@@ -2094,6 +2103,7 @@ todo
 toggleswitch
 toolbar
 Toolchain
+toolkitconverters
 toolset
 toolstrip
 tooltip
@@ -2372,6 +2382,7 @@ wprintf
 wprp
 wregex
 WResize
+writefile
 wsf
 wsh
 wsl
@@ -2404,6 +2415,7 @@ XDiff
 XDocument
 XElement
 XFile
+xia
 XIncrement
 XInstance
 xlink
