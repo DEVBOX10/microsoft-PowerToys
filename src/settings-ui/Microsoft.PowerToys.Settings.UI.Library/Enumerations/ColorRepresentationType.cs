@@ -55,5 +55,25 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Enumerations
         /// Color presentation as natural color (hue, whiteness[0%..100%], blackness[0%..100%])
         /// </summary>
         NCol = 8,
+
+        /// <summary>
+        /// Color presentation as CIELAB color space, also referred to as CIELAB(L[0..100], A[-128..127], B[-128..127])
+        /// </summary>
+        CIELAB = 9,
+
+        /// <summary>
+        /// Color presentation as CIEXYZ color space (X[0..95], Y[0..100], Z[0..109]
+        /// </summary>
+        CIEXYZ = 10,
+
+        /// <summary>
+        /// Color presentation as RGB float (red[0..1], green[0..1], blue[0..1])
+        /// </summary>
+        VEC4 = 11,
+
+        /// <summary>
+        /// Color presentation as integer decimal value 0-16777215
+        /// </summary>
+        DecimalValue = 12,
     }
 }

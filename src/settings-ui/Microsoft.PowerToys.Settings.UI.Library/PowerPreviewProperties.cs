@@ -63,6 +63,74 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool enablePdfPreview = true;
+
+        [JsonPropertyName("pdf-previewer-toggle-setting")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EnablePdfPreview
+        {
+            get => enablePdfPreview;
+            set
+            {
+                if (value != enablePdfPreview)
+                {
+                    LogTelemetryEvent(value);
+                    enablePdfPreview = value;
+                }
+            }
+        }
+
+        private bool enablePdfThumbnail = true;
+
+        [JsonPropertyName("pdf-thumbnail-toggle-setting")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EnablePdfThumbnail
+        {
+            get => enablePdfThumbnail;
+            set
+            {
+                if (value != enablePdfThumbnail)
+                {
+                    LogTelemetryEvent(value);
+                    enablePdfThumbnail = value;
+                }
+            }
+        }
+
+        private bool enableGcodePreview = true;
+
+        [JsonPropertyName("gcode-previewer-toggle-setting")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EnableGcodePreview
+        {
+            get => enableGcodePreview;
+            set
+            {
+                if (value != enableGcodePreview)
+                {
+                    LogTelemetryEvent(value);
+                    enableGcodePreview = value;
+                }
+            }
+        }
+
+        private bool enableGcodeThumbnail = true;
+
+        [JsonPropertyName("gcode-thumbnail-toggle-setting")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EnableGcodeThumbnail
+        {
+            get => enableGcodeThumbnail;
+            set
+            {
+                if (value != enableGcodeThumbnail)
+                {
+                    LogTelemetryEvent(value);
+                    enableGcodeThumbnail = value;
+                }
+            }
+        }
+
         public PowerPreviewProperties()
         {
         }

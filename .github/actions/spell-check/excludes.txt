@@ -12,6 +12,7 @@ ignore$
 \.bmp$
 \.dat$
 \.dll$
+\.gcode$
 \.gif$
 \.gitignore$
 \.ico$
@@ -25,6 +26,7 @@ ignore$
 \.png$
 \.woff$
 \.zip$
+^doc/devdocs/akaLinks\.md$
 ^src/common/logger/logger\.vcxproj\.filters$
 ^src/common/notifications/BackgroundActivatorDLL/BackgroundActivator\.vcxproj\.filters$
 ^src/common/notifications/BackgroundActivatorDLL/cpp\.hint$

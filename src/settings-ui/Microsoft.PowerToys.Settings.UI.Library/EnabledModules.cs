@@ -80,7 +80,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool videoConference = true;
+        private bool videoConference; // defaulting to off https://github.com/microsoft/PowerToys/issues/14507
 
         [JsonPropertyName("Video Conference")]
         public bool VideoConference
@@ -171,6 +171,38 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     awake = value;
+                }
+            }
+        }
+
+        private bool findMyMouse = true;
+
+        [JsonPropertyName("FindMyMouse")]
+        public bool FindMyMouse
+        {
+            get => findMyMouse;
+            set
+            {
+                if (findMyMouse != value)
+                {
+                    LogTelemetryEvent(value);
+                    findMyMouse = value;
+                }
+            }
+        }
+
+        private bool mouseHighlighter = true;
+
+        [JsonPropertyName("MouseHighlighter")]
+        public bool MouseHighlighter
+        {
+            get => mouseHighlighter;
+            set
+            {
+                if (mouseHighlighter != value)
+                {
+                    LogTelemetryEvent(value);
+                    mouseHighlighter = value;
                 }
             }
         }

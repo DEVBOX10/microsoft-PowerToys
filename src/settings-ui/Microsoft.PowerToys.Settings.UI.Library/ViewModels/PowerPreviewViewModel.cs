@@ -49,11 +49,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _svgRenderIsEnabled = Settings.Properties.EnableSvgPreview;
             _svgThumbnailIsEnabled = Settings.Properties.EnableSvgThumbnail;
             _mdRenderIsEnabled = Settings.Properties.EnableMdPreview;
+            _pdfRenderIsEnabled = Settings.Properties.EnablePdfPreview;
+            _gcodeRenderIsEnabled = Settings.Properties.EnableGcodePreview;
+            _pdfThumbnailIsEnabled = Settings.Properties.EnablePdfThumbnail;
+            _gcodeThumbnailIsEnabled = Settings.Properties.EnableGcodeThumbnail;
         }
 
         private bool _svgRenderIsEnabled;
         private bool _mdRenderIsEnabled;
+        private bool _pdfRenderIsEnabled;
+        private bool _gcodeRenderIsEnabled;
         private bool _svgThumbnailIsEnabled;
+        private bool _pdfThumbnailIsEnabled;
+        private bool _gcodeThumbnailIsEnabled;
 
         public bool SVGRenderIsEnabled
         {
@@ -104,6 +112,78 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _mdRenderIsEnabled = value;
                     Settings.Properties.EnableMdPreview = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool PDFRenderIsEnabled
+        {
+            get
+            {
+                return _pdfRenderIsEnabled;
+            }
+
+            set
+            {
+                if (value != _pdfRenderIsEnabled)
+                {
+                    _pdfRenderIsEnabled = value;
+                    Settings.Properties.EnablePdfPreview = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool PDFThumbnailIsEnabled
+        {
+            get
+            {
+                return _pdfThumbnailIsEnabled;
+            }
+
+            set
+            {
+                if (value != _pdfThumbnailIsEnabled)
+                {
+                    _pdfThumbnailIsEnabled = value;
+                    Settings.Properties.EnablePdfThumbnail = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool GCODERenderIsEnabled
+        {
+            get
+            {
+                return _gcodeRenderIsEnabled;
+            }
+
+            set
+            {
+                if (value != _gcodeRenderIsEnabled)
+                {
+                    _gcodeRenderIsEnabled = value;
+                    Settings.Properties.EnableGcodePreview = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool GCODEThumbnailIsEnabled
+        {
+            get
+            {
+                return _gcodeThumbnailIsEnabled;
+            }
+
+            set
+            {
+                if (value != _gcodeThumbnailIsEnabled)
+                {
+                    _gcodeThumbnailIsEnabled = value;
+                    Settings.Properties.EnableGcodeThumbnail = value;
                     RaisePropertyChanged();
                 }
             }

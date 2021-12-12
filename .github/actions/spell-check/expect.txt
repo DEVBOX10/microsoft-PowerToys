@@ -5,17 +5,19 @@ abcdef
 abcdefgh
 ABCDEFGHIJKLMNOPQRSTUVWXYZ
 abgr
+abi
 ABlocked
+ABOUTBOX
 Abug
 accctrl
 Acceleratorkeys
 ACCEPTFILES
 accessibile
 accessibilityinsights
+Accessible
 Acl
 aclapi
 AColumn
-Accessible
 acos
 acrt
 Actioncenter
@@ -103,6 +105,7 @@ asm
 asmx
 aspnet
 aspx
+ASSOCCHANGED
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
@@ -125,8 +128,9 @@ AUTOMATIONPROPERTIES
 Autorun
 AUTOSIZECOLUMNS
 AUTOUPDATE
+available
 AValid
-avialable
+awakeness
 awakeversion
 AWAYMODE
 AYUV
@@ -136,12 +140,14 @@ backend
 backtracer
 bak
 bbwe
+bca
 bcc
 bck
 Bcl
 BEGINLABELEDIT
 betadele
 betsegaw
+bfee
 BGR
 bgra
 BGSOUNDS
@@ -182,6 +188,7 @@ Browsable
 bsd
 bstr
 bti
+btn
 BTNFACE
 Bto
 buf
@@ -201,6 +208,7 @@ CANRENAME
 Captureascreenshot
 CAPTURECHANGED
 CASESENSITIVE
+cassert
 CAtl
 CCDDEE
 ccf
@@ -229,10 +237,13 @@ CHILDACTIVATE
 CHILDWINDOW
 chrdavis
 chrisharris
+chromaticities
 chrono
 Chrzan
 chrzan
 CHT
+cielab
+CIEXYZ
 CImage
 cinttypes
 cla
@@ -288,6 +299,7 @@ comhost
 cominterop
 commandline
 commctrl
+companding
 Compat
 COMPOSITIONFULL
 comsupp
@@ -374,8 +386,8 @@ CXSMICON
 CXVIRTUALSCREEN
 cxx
 cxxopts
-CYMK
 CYSMICON
+CYVIRTUALSCREEN
 cziplib
 Dac
 dacl
@@ -395,6 +407,7 @@ dbg
 Dbghelp
 DBLCLKS
 DBLEPSILON
+dchristensen
 DCOM
 dcomp
 DComposition
@@ -402,6 +415,7 @@ ddd
 ddee
 ddf
 Deact
+debian
 DECLAR
 declspec
 decltype
@@ -423,6 +437,7 @@ Delimarsky
 delims
 dend
 DENORMAL
+Deondre
 depersist
 deprioritized
 deps
@@ -437,6 +452,7 @@ desktopshorcutinstalled
 desktopwindowxamlsource
 dest
 DEU
+Deuchert
 devblogs
 devdocs
 devenum
@@ -484,6 +500,8 @@ DPICHANGED
 DPolicy
 DPopup
 DPSAPI
+DQTAT
+DQTYPE
 DRAWFRAME
 drawingcolor
 dreamsofameaningfullife
@@ -563,6 +581,7 @@ errc
 errorlevel
 ERRORMESSAGE
 ERRORTITLE
+ESettings
 esize
 estdir
 etcore
@@ -615,6 +634,7 @@ Farbraum
 FARPROC
 fdw
 feimage
+FFAA
 ffcd
 FFDDDDDD
 fff
@@ -650,6 +670,7 @@ FOF
 FOFX
 FOLDERID
 folderpath
+FORCEMINIMIZE
 FORCEOFFLINE
 foreach
 formatetc
@@ -659,6 +680,7 @@ FRAMEDOWNLOAD
 franky
 Froml
 fstream
+ftp
 ftps
 FTYPE
 FULLNAME
@@ -676,10 +698,13 @@ Gamebar
 GBs
 GCLP
 gcnew
+gcode
+gcodepreviewhandler
 gdi
 gdiplus
 GDISCALED
 generatesqlfromuserquery
+GETDESKWALLPAPER
 GETDISPINFO
 GETDLGCODE
 GETDPISCALEDSIZE
@@ -714,6 +739,7 @@ Hardlines
 HARDWAREINPUT
 hashcode
 Hashset
+Hashtable
 HASHVAL
 hbitmap
 hbmp
@@ -734,6 +760,7 @@ HDN
 hdrop
 HDS
 HEB
+Heiko
 helptext
 HEVC
 hfile
@@ -741,8 +768,10 @@ hglobal
 hhk
 HHmmss
 HHOOK
+hhx
 HICON
 HIDEWINDOW
+highlighter
 HIMAGELIST
 himl
 hinst
@@ -766,6 +795,7 @@ hmonitor
 HOLDENTER
 HOLDESC
 homljgmgpmcbpjbnjpfijnhipfkiclkd
+homepage
 HOOKPROC
 hostname
 hotkeycontrol
@@ -775,6 +805,7 @@ hotspot
 HPAINTBUFFER
 hpj
 hpp
+HRAWINPUT
 hread
 HREDRAW
 href
@@ -794,6 +825,7 @@ Htmdid
 html
 htt
 http
+HTTRANSPARENT
 hwb
 HWINEVENTHOOK
 hwnd
@@ -806,6 +838,7 @@ Hyperlink
 IAction
 IActivated
 IAnimatable
+ianjoneill
 IApp
 IApplication
 IAppx
@@ -826,6 +859,7 @@ ICollection
 IColor
 ICommand
 IComparer
+ICompositor
 ICONERROR
 ICONINFORMATION
 IContext
@@ -840,8 +874,10 @@ IDesktop
 IDictionary
 IDirectory
 IDispatch
+IDispatcher
 IDisposable
 idl
+IDLIST
 IDOK
 IDOn
 IDR
@@ -853,6 +889,7 @@ IEasing
 IEnum
 IEnumerable
 IEnumerator
+IEnvironment
 IEquality
 IEquatable
 IEvent
@@ -925,6 +962,7 @@ INPUTHARDWARE
 INPUTKEYBOARD
 INPUTLANGCHANGED
 INPUTMOUSE
+INPUTSINK
 INPUTTYPE
 INSTALLDESKTOPSHORTCUT
 INSTALLDIR
@@ -992,6 +1030,7 @@ IShell
 ISingle
 ISmart
 isocpp
+iss
 IStorage
 IStream
 istreambuf
@@ -1002,6 +1041,7 @@ ITab
 ITask
 ITemplate
 ITEMSTATEICONCLICK
+ITerminal
 ITest
 ith
 IThrottled
@@ -1021,11 +1061,13 @@ IWeb
 IWIC
 IWindows
 IWork
+IXaml
 IXml
 ixx
 IYUV
 IZone
 IZoom
+jakeoeding
 JArray
 jarro
 Jarryd
@@ -1050,7 +1092,9 @@ jyuwono
 kbd
 KBDLLHOOKSTRUCT
 kbm
+KERNELBASE
 KEYBDINPUT
+keybindings
 keyboardeventhandlers
 keyboardmanager
 keyboardmanagercommon
@@ -1127,6 +1171,7 @@ lmcons
 LMEM
 LMENU
 lnk
+LOADSTRING
 LOCALAPPDATA
 LOCALDISPLAY
 localhost
@@ -1148,6 +1193,7 @@ lowlevel
 LOWORD
 lparam
 LPBYTE
+LPCITEMIDLIST
 LPCMINVOKECOMMANDINFO
 LPCREATESTRUCT
 LPCTSTR
@@ -1194,6 +1240,7 @@ LVS
 LVSIL
 LWA
 lwin
+LZero
 lzw
 mailto
 MAINICON
@@ -1214,7 +1261,6 @@ Markdig
 MARQUEEPROGRESS
 martinchrzan
 martinmoene
-MATCHALLOCCURENCES
 MATCHMODE
 MAXIMIZEBOX
 MAXSHORTCUTSIZE
@@ -1258,6 +1304,7 @@ mii
 MIIM
 millis
 mimetype
+mindaro
 Minimizeallwindows
 MINIMIZEBOX
 miniz
@@ -1306,6 +1353,7 @@ msedge
 MSGFLT
 mshtmdid
 msi
+msiexec
 MSIFASTINSTALL
 MSIHANDLE
 MSIINSTALLER
@@ -1314,6 +1362,7 @@ msiquery
 MSIRESTARTMANAGERCONTROL
 msix
 msixbundle
+MSIXCA
 MSIXVERSION
 MSLLHOOKSTRUCT
 Mso
@@ -1368,6 +1417,7 @@ NESW
 netcore
 netcoreapp
 netcpl
+netlify
 netframework
 NETFX
 netsetup
@@ -1445,6 +1495,7 @@ nuget
 null
 nullopt
 nullptr
+numberbox
 NUMLOCK
 NUMPAD
 nunit
@@ -1527,6 +1578,7 @@ PCWSTR
 pdb
 pdbonly
 pdf
+pdfpreviewhandler
 pdo
 pdto
 pdtobj
@@ -1545,6 +1597,7 @@ phwnd
 pici
 pid
 pidl
+PIDLIST
 PINDIR
 pinfo
 pinvoke
@@ -1577,6 +1630,7 @@ powerlauncher
 powerpreview
 powerrename
 POWERRENAMETEST
+POWERRENAMEUIHOST
 powershell
 powertoy
 powertoysinterop
@@ -1616,7 +1670,9 @@ prgms
 pri
 PRINTCLIENT
 printf
+pritudev
 prm
+proactively
 PROCESSKEY
 PRODUCTVERSION
 PROGDLG
@@ -1660,6 +1716,7 @@ PWSTR
 pwsz
 pwtd
 qianlifeng
+Qin
 qit
 QITAB
 QITABENT
@@ -1669,6 +1726,7 @@ QUERYOPEN
 QUEUESYNC
 Quickime
 QUICKLAYOUTSWITCH
+QUNS
 qwertyuiopasdfghjklzxcvbnm
 qword
 qwrtyuiopsghjklzxvnm
@@ -1676,6 +1734,9 @@ Radiobuttons
 RAII
 RAlt
 randyrants
+RAWINPUT
+RAWINPUTDEVICE
+RAWINPUTHEADER
 RAWPATH
 rbegin
 Rbp
@@ -1686,6 +1747,7 @@ RBUTTONUP
 rclsid
 RCONTROL
 RCtrl
+rdeveen
 RDW
 readme
 READMODE
@@ -1759,6 +1821,7 @@ rgs
 rhs
 ricardosantos
 Richtext
+RIDEV
 RIGHTSCROLLBAR
 riid
 riverar
@@ -1805,6 +1868,7 @@ scancode
 scanled
 schedtasks
 Scn
+SCOOBE
 SCOPEID
 screenshot
 scrollable
@@ -1849,6 +1913,8 @@ sfgao
 SFGAOF
 SHAREIMAGELISTS
 sharpkeys
+SHCNE
+SHCNF
 shcore
 shellapi
 SHELLDLL
@@ -1881,7 +1947,9 @@ SHOWDEFAULT
 SHOWELEVATIONPROMPT
 SHOWMAXIMIZED
 SHOWMINIMIZED
+SHOWMINNOACTIVE
 SHOWNA
+SHOWNOACTIVATE
 SHOWNORMAL
 SHOWWINDOW
 shtypes
@@ -1944,6 +2012,7 @@ SRCCOPY
 sre
 sregex
 SResize
+SRGB
 srme
 srre
 srw
@@ -1977,6 +2046,7 @@ stdlib
 STDMETHODCALLTYPE
 STDMETHODIMP
 stdout
+stefan
 STEPIT
 stgm
 STGMEDIUM
@@ -2022,6 +2092,7 @@ Switchbetweenvirtualdesktops
 SWP
 swprintf
 SWRESTORE
+swscanf
 SYMED
 SYMOPT
 SYNCMFT
@@ -2103,6 +2174,7 @@ todo
 toggleswitch
 toolbar
 Toolchain
+toolkitcontrols
 toolkitconverters
 toolset
 toolstrip
@@ -2120,6 +2192,7 @@ traies
 transcoded
 transparrent
 TRAYMOUSEMESSAGE
+triaging
 TRK
 trl
 trunc
@@ -2129,7 +2202,9 @@ tsx
 TYMED
 typedef
 TYPEKEY
+TYPEKEYBOARD
 TYPELIB
+TYPEMOUSE
 typename
 typeof
 typeparam
@@ -2269,7 +2344,7 @@ VTABLE
 Vtbl
 wav
 WBounds
-Wca
+wca
 wcautil
 WCE
 wcex
@@ -2374,6 +2449,7 @@ workaround
 Workflow
 workspaces
 wostream
+wostringstream
 wox
 wparam
 wpf
@@ -2432,6 +2508,7 @@ XSmall
 XStr
 XToolset
 xunit
+XVIRTUALSCREEN
 Yaml
 YDiff
 YIncrement
@@ -2442,6 +2519,7 @@ YStr
 YUY
 yuyoyuppe
 YUYV
+YVIRTUALSCREEN
 YVU
 YVYU
 ZEROINIT

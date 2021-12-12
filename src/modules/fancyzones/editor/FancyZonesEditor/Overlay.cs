@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using FancyZonesEditor.Logs;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
@@ -134,6 +135,8 @@ namespace FancyZonesEditor
 
         public void Show()
         {
+            Logger.LogTrace();
+
             var mainWindowSettings = ((App)Application.Current).MainWindowSettings;
             if (_layoutPreview != null)
             {
@@ -154,6 +157,8 @@ namespace FancyZonesEditor
 
         public void ShowLayout()
         {
+            Logger.LogTrace();
+
             MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
             CurrentDataContext = settings.UpdateSelectedLayoutModel();
 
@@ -201,6 +206,8 @@ namespace FancyZonesEditor
 
         public void OpenEditor(LayoutModel model)
         {
+            Logger.LogTrace();
+
             _layoutPreview = null;
             if (CurrentDataContext is GridLayoutModel)
             {
@@ -229,6 +236,8 @@ namespace FancyZonesEditor
 
         public void CloseEditor()
         {
+            Logger.LogTrace();
+
             var mainWindowSettings = ((App)Application.Current).MainWindowSettings;
 
             _editorLayout = null;
@@ -253,9 +262,18 @@ namespace FancyZonesEditor
 
         public void FocusEditor()
         {
-            if (_editorLayout != null && _editorLayout is CanvasEditor canvasEditor)
+            if (_editorLayout == null)
+            {
+                return;
+            }
+
+            if (_editorLayout is CanvasEditor canvasEditor)
             {
                 canvasEditor.FocusZone();
+            }
+            else if (_editorLayout is GridEditor gridEditor)
+            {
+                gridEditor.FocusZone();
             }
         }
 

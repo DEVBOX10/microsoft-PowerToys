@@ -143,6 +143,18 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/KBM.gif",
                 Link = "https://aka.ms/PowerToysOverview_KeyboardManager",
             });
+            Modules.Insert((int)PowerToysModulesEnum.MouseUtils, new OobePowerToysModule()
+            {
+                ModuleName = loader.GetString("Oobe_MouseUtils"),
+                Tag = "MouseUtils",
+                IsNew = true,
+                Icon = "\uE962",
+                FluentIcon = "ms-appx:///Assets/FluentIcons/FluentIconsMouseUtils.png",
+                Image = "ms-appx:///Assets/Modules/MouseUtils.png",
+                Description = loader.GetString("Oobe_MouseUtils_Description"),
+                PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/MouseUtils.gif",
+                Link = "https://aka.ms/PowerToysOverview_MouseUtilities", // TODO: Add correct link after it's been created.
+            });
             Modules.Insert((int)PowerToysModulesEnum.PowerRename, new OobePowerToysModule()
             {
                 ModuleName = loader.GetString("Oobe_PowerRename"),
@@ -180,7 +192,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Link = "https://aka.ms/PowerToysOverview_ShortcutGuide",
             });
 
-            /* Modules.Insert((int)PowerToysModulesEnum.VideoConference, new OobePowerToysModule()
+            Modules.Insert((int)PowerToysModulesEnum.VideoConference, new OobePowerToysModule()
             {
                 ModuleName = loader.GetString("Oobe_VideoConference"),
                 Tag = "VideoConference",
@@ -191,7 +203,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Description = loader.GetString("Oobe_VideoConference_Description"),
                 PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/VideoConferenceMute.png",
                 Link = "https://aka.ms/PowerToysOverview_VideoConference",
-            }); */
+            });
         }
 
         public void OnClosing()
@@ -228,14 +240,13 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 case "FileExplorer": NavigationFrame.Navigate(typeof(OobeFileExplorer)); break;
                 case "ShortcutGuide": NavigationFrame.Navigate(typeof(OobeShortcutGuide)); break;
                 case "VideoConference": NavigationFrame.Navigate(typeof(OobeVideoConference)); break;
+                case "MouseUtils": NavigationFrame.Navigate(typeof(OobeMouseUtils)); break;
             }
         }
 
         public void UpdateUITheme()
         {
-            var settingsUtils = new SettingsUtils();
-            var generalSettings = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils);
-            switch (generalSettings.SettingsConfig.Theme.ToUpperInvariant())
+            switch (SettingsRepository<GeneralSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Theme.ToUpperInvariant())
             {
                 case "LIGHT":
                     this.RequestedTheme = ElementTheme.Light;
