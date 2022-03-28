@@ -10,23 +10,14 @@
     <Authors>Microsoft Corporation</Authors>
     <Product>PowerToys</Product>
     <Description>PowerToys Settings UI Runner</Description>
-    <Copyright>Copyright (C) 2020 Microsoft Corporation</Copyright>
-    <Company>Microsoft Corporation</Company>
     <PackageIcon>logo.png</PackageIcon>
-    <PackageIconUrl />
-    <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
-    <RepositoryType>Github</RepositoryType>
-    <PackageTags>PowerToys</PackageTags>
-    <NeutralLanguage>en-US</NeutralLanguage>
     <Version>$(Version).0</Version>
     <Platforms>x64</Platforms>
     <ApplicationIcon>icon.ico</ApplicationIcon>
-    <Win32Resource />
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    
+
     <!-- crutkas TODO: added for fallback, may need to be removed for WinUI3 -->
     <AssetTargetFallback>uap10.0.18362</AssetTargetFallback>
   </PropertyGroup>
@@ -49,10 +40,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="..\..\codeAnalysis\StyleCop.json" Link="StyleCop.json" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Include="..\..\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
   </ItemGroup>
 
@@ -64,11 +51,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.VCRTForwarders.140" Version="1.0.6" />
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
-      <Version>3.3.0</Version>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    <PackageReference Include="Microsoft.VCRTForwarders.140" Version="1.0.7" />
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
 

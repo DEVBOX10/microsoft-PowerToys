@@ -713,6 +713,9 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
         return E_POINTER;
     }
     *ppEnum = nullptr;
+    auto enumerator = winrt::make_self<ObjectEnumerator<IPin, IEnumPins>>();
+    auto detached_enumerator = enumerator.detach();
+    *ppEnum = detached_enumerator;
 
     std::unique_lock<std::mutex> lock{ _worker_mutex };
 
@@ -801,9 +804,8 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
         }
     }
 
-    auto enumerator = winrt::make_self<ObjectEnumerator<IPin, IEnumPins>>();
-    enumerator->_objects.emplace_back(_outPin);
-    *ppEnum = enumerator.detach();
+    detached_enumerator->_objects.emplace_back(_outPin);
+
     return S_OK;
 }
 
@@ -867,6 +869,13 @@ VideoCaptureProxyFilter::~VideoCaptureProxyFilter()
 
     _worker_cv.notify_one();
     _worker_thread.join();
+    if (_settingsUpdateChannel)
+    {
+        _settingsUpdateChannel->access([](auto settingsMemory) {
+            auto settings = reinterpret_cast<CameraSettingsUpdateChannel*>(settingsMemory._data);
+            settings->cameraInUse = false;
+        });
+    }
 }
 
 VideoCaptureProxyFilter::SyncedSettings VideoCaptureProxyFilter::SyncCurrentSettings()

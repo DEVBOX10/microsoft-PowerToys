@@ -27,11 +27,14 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 ### Requirements
 
 - Windows 11 or Windows 10 v1903 (18362) or newer.
-- [.NET Core 3.1.22 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-desktop-3.1.22-windows-x64-installer) or a newer 3.1.x runtime. The installer will handle this if not present.
+- Our installer will install the following items:
+   - [.NET Core 3.1.22 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-desktop-3.1.22-windows-x64-installer) or a newer 3.1.x runtime. This is needed currently for the Settings application.
+   - [.NET 6.02 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-desktop-6.0.2-windows-x64-installer) or a newer 6.0.x runtime. 
+   - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) bootstrapper. This will install the latest version. 
 
 ### Via GitHub with EXE [Recommended]
 
- [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release and then click on `PowerToysSetup-0.53.3-x64.exe` to download the PowerToys installer.
+ [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release and then click on `PowerToysSetup-0.56.2-x64.exe` to download the PowerToys installer.
 
 This is our preferred method.
 
@@ -66,98 +69,109 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-#### 0.53 - December 2021 Update
+### 0.56 - February 2022 Update
 
-We hope everyone has had a wonderful December 2021. The PowerToys community has been busy with a bunch of improvements. We're still working on improving the installer but this should drastically improve things.  3 things you will want to check out are G-code support in file explorer preview pane and thumbnails, the new web search plugin from PowerToys Run via <kbd>??</kbd> action phrase, and the new Always on Top utility via <kbd>Win</kbd>+<kbd>Ctrl</kbd>+<kbd>T</kbd>.
+In this release, we focused heavily on stability and improvements.  Below are some of the highlights!
 
-[@Aaron-Junker](https://github.com/Aaron-Junker) also has done some great progress on [implementing developer file preview pane](https://github.com/microsoft/PowerToys/issues/1527) via the Monaco engine from Visual Studio Code.
+**Highlights**
 
-#### Things to be aware of
-- The new installer currently has a visual quirk when upgrade if you have a custom install path.  It will show the default install path but it will actually overwrite the current location.  We are investigating how to fix this.
+- Upgrade notes!  A big feedback items for new versions was upgrade notes.  We have the release notes on GitHub as well.
+- FancyZones zone limit has been increased to 128 zones.  Before the limit was 40.
+- Timezone conversion plugin for PowerToys Run!  Thanks [@TobiasSekan](https://github.com/TobiasSekan)
+- Child and Popup window support for FancyZones.  To enable, go to Settings→FancyZones→Windows. These were bugs we fixed that without realizing it was a useful feature to most.
+- Find my mouse will now activate via shaking the mouse with a settings change!
+![Find my mouse setting for Activate to shake](https://user-images.githubusercontent.com/1462282/156048784-5a16ae0e-3551-47c6-a601-833acc9e893b.png)
 
-#### Always on Top
-- Welcome to the family!  With a quick <kbd>Win</kbd>+<kbd>Ctrl</kbd>+<kbd>T</kbd>, the window in focus is toggled to be on top.  Toggle again, and it reverts back to normal.
+### Always on Top
 
-#### ColorPicker
-- HEX input improvements for adjust color menu including support for hex code without hashtag and short hex code like #CF0.  Thanks @htcfreek! 
-- Better bottom right screen detection for overlay
+- Fixed excess GPU / CPU usage when enabled
+- If border has focus, not closable via F4
+- Changing border sizes should resize correctly for existing windows
+- Border goes away with Outlook modal windows 
 
-#### FancyZones
-- Increased negative space margin
-- Fix for not snapping child windows
-- Fix for clearing keyboard focus on editor launch
-- Fix to improve overlays to reduce brightness and hide numbers. Thanks @davidegiacometti
+### ColorPicker
 
-#### File Explorer
-- Added G-code support for thumbnails and preview pane.  Thanks @pedrolamas 
+- No longer crashes during theme change
 
-#### Image Resizer
-- Fixed regression from Metadata tag removal of ColorSpace.  Thanks @CleanCodeDeveloper
+### FancyZones
 
-#### PowerRename
-- Row highlighting + preview support now implemented. Thanks @niels9001
-- Fixed AltGR input issue
-- Improved folder renaming support
-- Opens on active monitor
+- Increased zone limit from 40 to 128.
+- Child and Popup window support for FancyZones. To enable, go to Settings→FancyZones→Windows. These were bugs we fixed that without realizing it was a useful feature to most.
 
-#### PowerToys Run
-- Web searching has been added! `?? What is the answer to life` will go to your favorite search engine via your browser.  You can change the default action key too!  Thanks @cyberrex5 for primary implementation and @franky920920 and @htcfreek for supporting
-- VS Code workspace improvements. Thanks @ricardosantos9521
-- Binary and Hex number support.  Thanks @gsuberland
-- Ability to use factorials in calculations
-- PT Run will not show in Window Walker results anymore.  Thanks @davidegiacometti
-- Fix log / ln calculations
-- Fix to make previous results clear
-- Fix to detect symlinks and prevent recursive loops
-- Fix for trackpad scrolling being too fast
-- Removed unneeded nuget package.  Thanks @ChaseKnowlden
-- Better detection for if a packaged app can be elevated
-- Improve crash resiliency for Program plugin.  Thanks @davidegiacometti
-- Improved Windows setting results.  Thanks @htcfreek
-- Fixed a bug where some similar activation phrases aren't working as expected. Thanks @htcfreek and @cyberrex5.
+### File explorer
 
-#### Video conference mute
-- Disabled by default as this requires elevation to register the virtual camera.
-- Changed (default) hotkey for mute camera & microphone from <kbd>Win</kbd>+<kbd>N</kbd> to <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>Q</kbd> to not conflict with a Windows 11 keyboard shortcut
+- Fixes for Dev file preview: (Thanks [@Aaron-Junker](https://github.com/Aaron-Junker))
+  - Fix fix for object reference not set.
+  - Fix for encoding UTF-8.
+  - Fix for file is in use. 
+  - Fix for saying the file is too big.
 
-#### Settings
-- Multiple accessibility, layout, image, string and icons fixes. Thanks @niels9001
+### Image Resizer
 
-#### Runner
-- Improved mutex support to prevent multiple PT Run instances from running
+- Fix for `invalid operation` error. [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)!
 
-#### Installer
-- **NOTE:**  The new installer currently has a visual quirk when upgrade if you have a custom install path.  It will show the default install path but it will actually overwrite the current location.  We are investigating how to fix this.
-- Large progress toward user based installing vs machine wide. Upgrade scenario still needs additional work.
-- Removed custom bootstrapper and now are using a WiX bundle.
-- Removed unused image assets that were still being shipped. Thanks @niels9001
+### Mouse utility
 
-#### ARM64 support
-- Setting WinUI3 proof-of-concept and validate we do need at least one more feature, elevation support from WinUI 3 unpackaged applications.
+- Find my mouse will now activate via shaking the mouse with a settings change!
+- Find my mouse now can excludes apps.
+- Fix for crosshair thickness looking odd due to anti-aliasing
+- Fix for a hard crash on crosshair (This was a hotfix for 0.55)
 
-#### Dev improvements
-- New YAML based pipeline for building our signed installer. This will allow us to consolidate our CI to use same file. This was critical for us to unblock ARM64 and .NET 6 migration.
-- Our submodules will no longer auto fetch to prevent locking issues. If you want a refresher on how to do this, head to [our dev docs](https://github.com/microsoft/PowerToys/tree/main/doc/devdocs#get-submodules-to-compile)
-- Localization system shifted to Touchdown from CDPx.  This should remove many of the loc issues.
-- Consolidated a lot of the naming of EXEs and DLLs along with projects
-- Update to spell checker.  Thanks @jsoref
-- /dup response has been added
-- /reportbug /bugreport will ask for a "report bug" zip
+### PowerRename
+
+- Will not spells check file names anymore. Thanks [@niels9001](https://github.com/niels9001)
+- Autocomplete result box to not obscure apply button. Thanks [@niels9001](https://github.com/niels9001)
+- Regex fix
+
+### PowerToys Run
+
+- Timezone conversion plugin for PowerToys Run!  Thanks [@TobiasSekan](https://github.com/TobiasSekan)
+- Hexadecimal and binary numbers now are supported in the calculator plugin. This was added a bit ago and we'd like to extend a belated thanks to [@gsuberland](https://github.com/gsuberland)
+- Terminal plugin performance boost.  Thanks [@htcfreek](https://github.com/htcfreek)!
+- Terminal will now be found via the Program plugin again.  
+- Shutdown command is now using hybrid fast argument for shutting down
+- Support for VSCodium with VS Code workplace plugin. Thanks [@makeProjectGreatAgain](https://github.com/makeProjectGreatAgain)
+
+### Video conference mute
+
+- nVidia Broadcast software won't crash anymore
+
+### Settings
+
+- Upgrade notes in OOBE
+- Fix for settings being lost (This was a hotfix for 0.55)
+- UX improvements. Thanks [@niels9001](https://github.com/niels9001)
+
+### Installer
+
+- Believe we have a fix for the long hated "app.dark.png is missing" error. Thanks to [@robmen](https://github.com/robmen) for having a great blog!
+- Installer will launch PowerToys under appropriate elevation versus Admin only due to UAC prompt for installation (This was a hotfix for 0.55)
+- PowerToys will now start if installed under different user
+
+### Development
+
+- ARM64 - We removed the last .NET Framework dependency.  Thanks [@snickler](https://github.com/snickler) for helping get this across the finish line!
+- .NET 6 upgrade, now on the newest and hottest .NET runtime
+- Code analyzers have been upgraded!  Thanks [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)!
+- Symbols are back!
+- Code refactoring, thanks [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper) and [@cyberrex5](https://github.com/cyberrex5) for helping here!
+- We are now on VS 2022 with the .NET 6 upgrade.
 
 #### Community contributions
 
 We'd like to directly mention certain contributors (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software. 
+[@Aaron-Junker](https://github.com/Aaron-Junker), [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper), [@cyberrex5](https://github.com/cyberrex5), [@franky920920](https://github.com/franky920920), [@gsuberland](https://github.com/gsuberland), [@htcfreek](https://github.com/htcfreek), [@jay-o-way](https://github.com/jay-o-way), [@makeProjectGreatAgain](https://github.com/makeProjectGreatAgain), [@niels9001](https://github.com/niels9001), [@robmen](https://github.com/robmen), [@snickler](https://github.com/snickler), and [@TobiasSekan ](https://github.com/TobiasSekan).
 
-[@Aaron-Junker](https://github.com/Aaron-Junker), [@ChaseKnowlden](https://github.com/ChaseKnowlden), [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper), [@cyberrex5](https://github.com/cyberrex5), [@davidegiacometti](https://github.com/davidegiacometti), [@franky920920](https://github.com/franky920920), [@gsuberland](https://github.com/gsuberland),  [@jay-o-way](https://github.com/jay-o-way), [@jsoref](https://github.com/jsoref), [@niels9001](https://github.com/niels9001), and [@ricardosantos9521](https://github.com/ricardosantos9521)
 
-#### What is being planned for v0.55
+#### What is being planned for v0.57
 
-For [v0.55][github-next-release-work], we'll work on adding more stability in with VCM and getting dev file preview pane added in so we get 150 file types :)
+For [v0.57][github-next-release-work], we'll start work on below:
 
-- We are working to heavily reduce / remove the UAC prompt over the next few releases on install. This is a big shift so it is spanning multiple releases so we can isolate issues if they do occur. Work is tracked in [#10126](https://github.com/microsoft/PowerToys/issues/10126)
-- Getting the dev file preview pane work integrated. (Monaco Editor)
-- .NET 6 upgrade to all available surfaces
-- Find my mouse feature, accessibility cross-hair
+- Start work on two new PowerToys
+- Improvements to PowerToy Run plugins
+- Stability / bug fixes
+- Validation pass again using WinUI 3.1 for Settings
+- Adding new file types to dev file preview
 
 ## PowerToys Community
 
@@ -184,5 +198,5 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [usingPowerToys-docs-link]: https://aka.ms/powertoys-docs
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F28
-[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F27
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F30
+[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F29

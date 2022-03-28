@@ -491,8 +491,18 @@ namespace Microsoft.Plugin.Program.Programs
                         }
                     }
                 }
+                else
+                {
+                    // If the link points nowhere, consider it invalid.
+                    return InvalidProgram;
+                }
 
                 return program;
+            }
+            catch (System.IO.FileLoadException e)
+            {
+                ProgramLogger.Warn($"Couldn't load the link file at {path}. This might be caused by a new link being created and locked by the OS.", e, MethodBase.GetCurrentMethod().DeclaringType, path);
+                return InvalidProgram;
             }
 
             // Only do a catch all in production. This is so make developer aware of any unhandled exception and add the exception handling in.
@@ -758,7 +768,7 @@ namespace Microsoft.Plugin.Program.Programs
             return IndexPath(suffixes, indexLocation);
         }
 
-        private static IEnumerable<string> RegisteryAppProgramPaths(IList<string> suffixes)
+        private static IEnumerable<string> RegistryAppProgramPaths(IList<string> suffixes)
         {
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ee872121
             const string appPaths = @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths";
@@ -788,9 +798,9 @@ namespace Microsoft.Plugin.Program.Programs
         private static IEnumerable<string> GetPathsFromRegistry(RegistryKey root)
             => root
                 .GetSubKeyNames()
-                .Select(x => GetPathFromRegisterySubkey(root, x));
+                .Select(x => GetPathFromRegistrySubkey(root, x));
 
-        private static string GetPathFromRegisterySubkey(RegistryKey root, string subkey)
+        private static string GetPathFromRegistrySubkey(RegistryKey root, string subkey)
         {
             var path = string.Empty;
             try
@@ -909,7 +919,7 @@ namespace Microsoft.Plugin.Program.Programs
                     (true, () => CustomProgramPaths(settings.ProgramSources, settings.ProgramSuffixes)),
                     (settings.EnableStartMenuSource, () => StartMenuProgramPaths(settings.ProgramSuffixes)),
                     (settings.EnableDesktopSource, () => DesktopProgramPaths(settings.ProgramSuffixes)),
-                    (settings.EnableRegistrySource, () => RegisteryAppProgramPaths(settings.ProgramSuffixes)),
+                    (settings.EnableRegistrySource, () => RegistryAppProgramPaths(settings.ProgramSuffixes)),
                 };
 
                 // Run commands are always set as AppType "RunCommand"

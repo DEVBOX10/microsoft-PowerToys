@@ -78,7 +78,7 @@ namespace PowerLauncher
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);
-            WindowsInteropHelper.SetPopupStyle(this);
+            WindowsInteropHelper.SetToolWindowStyle(this);
         }
 
         private void CheckForFirstDelete(object sender, ElapsedEventArgs e)
@@ -204,6 +204,10 @@ namespace PowerLauncher
                     // Called when window is made visible by hotkey. Not called when the window is deactivated by clicking away
                     UpdatePosition();
                     BringProcessToForeground();
+
+                    // HACK: Setting focus here again fixes some focus issues, like on first run or after showing a message box.
+                    SearchBox.QueryTextBox.Focus();
+                    Keyboard.Focus(SearchBox.QueryTextBox);
 
                     if (!_viewModel.LastQuerySelected)
                     {
