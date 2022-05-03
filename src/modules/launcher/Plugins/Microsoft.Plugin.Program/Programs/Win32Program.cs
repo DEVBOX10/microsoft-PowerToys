@@ -266,7 +266,24 @@ namespace Microsoft.Plugin.Program.Programs
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ =>
                     {
-                        var info = GetProcessStartInfo(queryArguments, true);
+                        var info = GetProcessStartInfo(queryArguments, RunAsType.Administrator);
+                        Task.Run(() => Main.StartProcess(Process.Start, info));
+
+                        return true;
+                    },
+                });
+
+                contextMenus.Add(new ContextMenuResult
+                {
+                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                    Title = Properties.Resources.wox_plugin_program_run_as_user,
+                    Glyph = "\xE7EE",
+                    FontFamily = "Segoe MDL2 Assets",
+                    AcceleratorKey = Key.U,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                    Action = _ =>
+                    {
+                        var info = GetProcessStartInfo(queryArguments, RunAsType.OtherUser);
                         Task.Run(() => Main.StartProcess(Process.Start, info));
 
                         return true;
@@ -317,7 +334,7 @@ namespace Microsoft.Plugin.Program.Programs
             return contextMenus;
         }
 
-        private ProcessStartInfo GetProcessStartInfo(string programArguments, bool runAsAdmin = false)
+        private ProcessStartInfo GetProcessStartInfo(string programArguments, RunAsType runAs = RunAsType.None)
         {
             return new ProcessStartInfo
             {
@@ -325,8 +342,15 @@ namespace Microsoft.Plugin.Program.Programs
                 WorkingDirectory = ParentDirectory,
                 UseShellExecute = true,
                 Arguments = programArguments,
-                Verb = runAsAdmin ? "runas" : string.Empty,
+                Verb = runAs == RunAsType.Administrator ? "runAs" : runAs == RunAsType.OtherUser ? "runAsUser" : string.Empty,
             };
+        }
+
+        private enum RunAsType
+        {
+            None,
+            Administrator,
+            OtherUser,
         }
 
         public override string ToString()
@@ -463,8 +487,14 @@ namespace Microsoft.Plugin.Program.Programs
                 var program = CreateWin32Program(path);
                 string target = ShellLinkHelper.RetrieveTargetPath(path);
 
-                if (!string.IsNullOrEmpty(target) && (File.Exists(target) || Directory.Exists(target)))
+                if (!string.IsNullOrEmpty(target))
                 {
+                    if (!(File.Exists(target) || Directory.Exists(target)))
+                    {
+                        // If the link points nowhere, consider it invalid.
+                        return InvalidProgram;
+                    }
+
                     program.LnkResolvedPath = program.FullPath;
 
                     // Using CurrentCulture since this is user facing
@@ -490,11 +520,6 @@ namespace Microsoft.Plugin.Program.Programs
                             program.Description = info.FileDescription;
                         }
                     }
-                }
-                else
-                {
-                    // If the link points nowhere, consider it invalid.
-                    return InvalidProgram;
                 }
 
                 return program;

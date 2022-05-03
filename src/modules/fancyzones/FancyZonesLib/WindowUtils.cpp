@@ -339,11 +339,6 @@ void FancyZonesWindowUtils::SizeWindowToRect(HWND window, RECT rect) noexcept
     ScreenToWorkAreaCoords(window, rect);
 
     placement.rcNormalPosition = rect;
-
-    // Set window corner preference on Windows 11 to "Do not round"
-    int corner_preference = DWMWCP_DONOTROUND;
-    DwmSetWindowAttribute(window, DWMWA_WINDOW_CORNER_PREFERENCE, &corner_preference, sizeof(corner_preference));
-
     placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
 
     auto result = ::SetWindowPlacement(window, &placement);
@@ -407,16 +402,11 @@ void FancyZonesWindowUtils::RestoreWindowSize(HWND window) noexcept
         RECT rect;
         if (GetWindowRect(window, &rect))
         {
-            rect.right = rect.left + windowSize[0];
-            rect.bottom = rect.top + windowSize[1];
+            rect.right = rect.left + static_cast<int>(windowWidth);
+            rect.bottom = rect.top + static_cast<int>(windowHeight);
             Logger::info("Restore window size");
             SizeWindowToRect(window, rect);
         }
-
-        // Set window corner preference on Windows 11 to "Default"
-        // TODO: Should probably store preference from before snap
-        int corner_preference = DWMWCP_DEFAULT;
-        DwmSetWindowAttribute(window, DWMWA_WINDOW_CORNER_PREFERENCE, &corner_preference, sizeof(corner_preference));
 
         ::RemoveProp(window, ZonedWindowProperties::PropertyRestoreSizeID);
     }
@@ -484,6 +474,64 @@ RECT FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(HWND window, RECT rect
     MapWindowRect(windowOfRect, nullptr, &newWindowRect);
 
     return newWindowRect;
+}
+
+void FancyZonesWindowUtils::DisableRoundCorners(HWND window) noexcept
+{
+    HANDLE handle = GetPropW(window, ZonedWindowProperties::PropertyCornerPreference);
+    if (!handle)
+    {
+        int cornerPreference = DWMWCP_DEFAULT;
+        // save corner preference if it wasn't set already
+        DwmGetWindowAttribute(window, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPreference, sizeof(cornerPreference));
+
+        static_assert(sizeof(int) == 4);
+        static_assert(sizeof(HANDLE) == 8);
+        static_assert(sizeof(HANDLE) == sizeof(uint64_t));
+
+        // 0 is a valid value, so use a high bit to distinguish between 0 and a GetProp fail
+        uint64_t cornerPreference64 = static_cast<uint64_t>(cornerPreference);
+        cornerPreference64 = (cornerPreference64 & 0xFFFFFFFF) | 0x100000000;
+
+        HANDLE preferenceHandle = {};
+        memcpy(&preferenceHandle, &cornerPreference64, sizeof(HANDLE));
+
+        if (!SetPropW(window, ZonedWindowProperties::PropertyCornerPreference, preferenceHandle))
+        {
+            Logger::error(L"Failed to save corner preference, {}", get_last_error_or_default(GetLastError()));
+        }
+    }
+
+    // Set window corner preference on Windows 11 to "Do not round"
+    int cornerPreference = DWMWCP_DONOTROUND;
+    if (!SUCCEEDED(DwmSetWindowAttribute(window, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPreference, sizeof(cornerPreference))))
+    {
+        Logger::error(L"Failed to set DWMWCP_DONOTROUND corner preference");
+    }
+}
+
+void FancyZonesWindowUtils::ResetRoundCornersPreference(HWND window) noexcept
+{
+    HANDLE handle = GetPropW(window, ZonedWindowProperties::PropertyCornerPreference);
+    if (handle)
+    {
+        static_assert(sizeof(int) == 4);
+        static_assert(sizeof(HANDLE) == 8);
+        static_assert(sizeof(HANDLE) == sizeof(uint64_t));
+
+        uint64_t cornerPreference64 = {};
+        memcpy(&cornerPreference64, &handle, sizeof(uint64_t));
+        cornerPreference64 = cornerPreference64 & 0xFFFFFFFF;
+
+        int cornerPreference = static_cast<int>(cornerPreference64);
+
+        if (!SUCCEEDED(DwmSetWindowAttribute(window, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPreference, sizeof(cornerPreference))))
+        {
+            Logger::error(L"Failed to set saved corner preference");
+        }
+
+        RemovePropW(window, ZonedWindowProperties::PropertyCornerPreference);
+    }
 }
 
 void FancyZonesWindowUtils::MakeWindowTransparent(HWND window)

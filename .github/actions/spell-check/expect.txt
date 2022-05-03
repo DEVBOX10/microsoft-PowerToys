@@ -65,7 +65,7 @@ APPICON
 appid
 appium
 APPLASTZONE
-applets
+Applets
 Applicationcan
 applicationframehost
 applog
@@ -303,7 +303,7 @@ constexpr
 contentdialog
 contentfiles
 CONTEXTHELP
-CONTEXTMENU
+contextmenu
 CONTEXTMENUHANDLER
 CONTROLL
 CONTROLPARENT
@@ -527,6 +527,7 @@ enum
 EOAC
 eol
 epicgames
+epo
 Eqn
 ERASEBKGND
 EREOF
@@ -574,6 +575,7 @@ fallthrough
 fancyzones
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
+FANCYZONESWINDOWSTYLES
 Farbraum
 Faroe
 FARPROC
@@ -695,6 +697,7 @@ helptext
 Heure
 HEVC
 hfile
+HFONT
 hglobal
 hhk
 HHmmss
@@ -839,6 +842,7 @@ IIO
 IItem
 IJson
 IKs
+Ijwhost
 IList
 ILogon
 IMAGEHLP
@@ -1061,6 +1065,7 @@ lhs
 lhwnd
 lia
 LIBID
+Lifecycle
 LIGHTORANGE
 LIGHTTURQUOISE
 lindex
@@ -1155,6 +1160,7 @@ Marquesas
 martinchrzan
 martinmoene
 Mato
+Maximizable
 MAXIMIZEBOX
 MAXSHORTCUTSIZE
 maxversiontested
@@ -1201,6 +1207,7 @@ millis
 mimetype
 mindaro
 Minimatch
+Minimizable
 MINIMIZEBOX
 MINIMIZEEND
 MINIMIZESTART
@@ -1305,6 +1312,7 @@ NCPAINT
 NCRBUTTONDBLCLK
 NCRBUTTONDOWN
 NCRBUTTONUP
+NCRENDERING
 NDEBUG
 Ndombe
 ndp
@@ -1470,6 +1478,7 @@ PCIDLIST
 PCWSTR
 pdb
 pdbonly
+pde
 pdfpreviewhandler
 pdo
 pdto
@@ -1655,6 +1664,7 @@ regkey
 REGPINTYPES
 regsvr
 reimplementing
+REINSTALLMODE
 reloadable
 Remapper
 remappings
@@ -2023,7 +2033,7 @@ timediff
 Timeline
 timeunion
 timeutil
-timezone
+timezones
 Titlecase
 TLayout
 tlb
@@ -2213,6 +2223,7 @@ wdp
 wdupenv
 weakme
 webcam
+webserver
 webpage
 website
 webview
@@ -2242,10 +2253,14 @@ WINDOWPLACEMENT
 WINDOWPOSCHANGED
 WINDOWPOSCHANGING
 Windowsapp
+windowsappsdk
+windowsappruntimeinstall
 WINDOWSBUILDNUMBER
 Windowscodecs
 windowsdesktop
 windowssearch
+WINDOWSTYLES
+WINDOWSTYLESICON
 windowsx
 windowwalker
 winerror
