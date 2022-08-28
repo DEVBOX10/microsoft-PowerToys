@@ -49,7 +49,12 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         /// <summary>
         /// Name of the virtual host
         /// </summary>
-        public const string VirtualHostName = "PowerToysLocalSvgThumbnail";
+        private const string VirtualHostName = "PowerToysLocalSvgThumbnail";
+
+        /// <summary>
+        /// URI of the local file saved with the contents
+        /// </summary>
+        private Uri _localFileURI;
 
         /// <summary>
         /// Gets the path of the current assembly.
@@ -57,7 +62,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         /// <remarks>
         /// Source: https://stackoverflow.com/a/283917/14774889
         /// </remarks>
-        public static string AssemblyDirectory
+        private static string AssemblyDirectory
         {
             get
             {
@@ -69,6 +74,12 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         }
 
         /// <summary>
+        /// Represent WebView2 user data folder path.
+        /// </summary>
+        private string _webView2UserDataFolder = System.Environment.GetEnvironmentVariable("USERPROFILE") +
+                                    "\\AppData\\LocalLow\\Microsoft\\PowerToys\\SvgThumbnailPreview-Temp";
+
+        /// <summary>
         /// Render SVG using WebView2 control, capture the WebView2
         /// preview and create Bitmap out of it.
         /// </summary>
@@ -76,6 +87,8 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         /// <param name="cx">The maximum thumbnail size, in pixels.</param>
         public Bitmap GetThumbnail(string content, uint cx)
         {
+            CleanupWebView2UserDataFolder();
+
             if (cx == 0 || cx > MaxThumbnailSize || string.IsNullOrEmpty(content) || !content.Contains("svg"))
             {
                 return null;
@@ -98,6 +111,9 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                     await _browser.ExecuteScriptAsync($"document.getElementsByTagName('svg')[0].style = 'width:100%;height:100%';");
                 }
 
+                // Hide scrollbar - fixes #18286
+                await _browser.ExecuteScriptAsync("document.querySelector('body').style.overflow='hidden'");
+
                 MemoryStream ms = new MemoryStream();
                 await _browser.CoreWebView2.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png, ms);
                 thumbnail = new Bitmap(ms);
@@ -115,10 +131,10 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                 thumbnailDone = true;
             };
 
+            var webView2Options = new CoreWebView2EnvironmentOptions("--block-new-web-contents");
             ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
                webView2EnvironmentAwaiter = CoreWebView2Environment
-                   .CreateAsync(userDataFolder: System.Environment.GetEnvironmentVariable("USERPROFILE") +
-                                                "\\AppData\\LocalLow\\Microsoft\\PowerToys\\SvgThumbnailPreview-Temp")
+                   .CreateAsync(userDataFolder: _webView2UserDataFolder, options: webView2Options)
                    .ConfigureAwait(true).GetAwaiter();
             webView2EnvironmentAwaiter.OnCompleted(async () =>
             {
@@ -126,12 +142,43 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                 {
                     _webView2Environment = webView2EnvironmentAwaiter.GetResult();
                     await _browser.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
-                    await _browser.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("window.addEventListener('contextmenu', window => {window.preventDefault();});");
-                    _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
+                    _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Deny);
                     _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
-                    _browser.NavigateToString(wrappedContent);
+                    _browser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+                    _browser.CoreWebView2.Settings.AreDevToolsEnabled = false;
+                    _browser.CoreWebView2.Settings.AreHostObjectsAllowed = false;
+                    _browser.CoreWebView2.Settings.IsGeneralAutofillEnabled = false;
+                    _browser.CoreWebView2.Settings.IsPasswordAutosaveEnabled = false;
+                    _browser.CoreWebView2.Settings.IsScriptEnabled = false;
+                    _browser.CoreWebView2.Settings.IsWebMessageEnabled = false;
+
+                    // Don't load any resources.
+                    _browser.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+                    _browser.CoreWebView2.WebResourceRequested += (object sender, CoreWebView2WebResourceRequestedEventArgs e) =>
+                    {
+                        // Show local file we've saved with the svg contents. Block all else.
+                        if (new Uri(e.Request.Uri) != _localFileURI)
+                        {
+                            e.Response = _browser.CoreWebView2.Environment.CreateWebResourceResponse(null, 403, "Forbidden", null);
+                        }
+                    };
+
+                    // WebView2.NavigateToString() limitation
+                    // See https://docs.microsoft.com/en-us/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
+                    // While testing the limit, it turned out it is ~1.5MB, so to be on a safe side we go for 1.5m bytes
+                    if (wrappedContent.Length > 1_500_000)
+                    {
+                        string filename = _webView2UserDataFolder + "\\" + Guid.NewGuid().ToString() + ".html";
+                        File.WriteAllText(filename, wrappedContent);
+                        _localFileURI = new Uri(filename);
+                        _browser.Source = _localFileURI;
+                    }
+                    else
+                    {
+                        _browser.NavigateToString(wrappedContent);
+                    }
                 }
-                catch (NullReferenceException)
+                catch (Exception)
                 {
                 }
             });
@@ -140,6 +187,8 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
             {
                 Application.DoEvents();
             }
+
+            _browser.Dispose();
 
             return thumbnail;
         }
@@ -229,6 +278,17 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                 using (var reader = new StreamReader(stream))
                 {
                     svgData = reader.ReadToEnd();
+                    try
+                    {
+                        // Fixes #17527 - Inkscape v1.1 swapped order of default and svg namespaces in svg file (default first, svg after).
+                        // That resulted in parser being unable to parse it correctly and instead of svg, text was previewed.
+                        // MS Edge and Firefox also couldn't preview svg files with mentioned order of namespaces definitions.
+                        svgData = SvgPreviewHandlerHelper.SwapNamespaces(svgData);
+                        svgData = SvgPreviewHandlerHelper.AddStyleSVG(svgData);
+                    }
+                    catch (Exception)
+                    {
+                    }
                 }
             }
 
@@ -248,6 +308,26 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         public void Dispose()
         {
             GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Cleanup the previously created tmp html files from svg files bigger than 2MB.
+        /// </summary>
+        private void CleanupWebView2UserDataFolder()
+        {
+            try
+            {
+                // Cleanup temp dir
+                var dir = new DirectoryInfo(_webView2UserDataFolder);
+
+                foreach (var file in dir.EnumerateFiles("*.html"))
+                {
+                    file.Delete();
+                }
+            }
+            catch (Exception)
+            {
+            }
         }
     }
 }

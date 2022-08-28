@@ -39,7 +39,7 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and you
 
 1. Windows 10 April 2018 Update (version 1803) or newer
 2. Visual Studio Community/Professional/Enterprise 2022
-3. Install the [Windows App SDK 1.0.3 C# Visual Studio 2022 extension](https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/downloads)
+3. Install the [required Windows Apps SDK workloads](https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/set-up-your-development-environment?tabs=vs-2022-17-1-a%2Cvs-2022-17-1-b#required-workloads-and-components), the [Windows App SDK 1.0.3 C# Visual Studio 2022 extension](https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/downloads) and the [Windows Apps SDK 1.0.3 runtime](https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/downloads#windows-app-sdk-10).
 4. Once you've cloned and started the `PowerToys.sln`, in the solution explorer, if you see a dialog that says `install extra components`, click `install`
 
 ### Get Submodules to compile
@@ -72,7 +72,25 @@ The installer can only be compiled in `Release` mode, step 1 and 2 must be done 
 ### Prerequisites for building the MSI installer
 
 1. Install the [WiX Toolset Visual Studio 2022 Extension](https://marketplace.visualstudio.com/items?itemName=WixToolset.WixToolsetVisualStudio2022Extension).
-2. Install the [WiX Toolset build tools](https://wixtoolset.org/releases/).
+2. Install the [WiX Toolset build tools](https://wixtoolset.org/releases/v3-14-0-6526/).
+3. Download [WiX binaries](https://wixtoolset.org/downloads/v3.14.0.6526/wix314-binaries.zip) and extract `wix.targets` to `C:\Program Files (x86)\WiX Toolset v3.14`.
+
+### Locally building the installer prerequisite projects all at once from the command-line
+
+1. Open a `Developer Command Prompt for VS 2022`
+2. Ensure `nuget.exe` is in your `%path%`
+3. In the repo root, run these commands:
+  
+```
+nuget restore .\tools\BugReportTool\BugReportTool.sln
+msbuild -p:Platform=x64 -p:Configuration=Release .\tools\BugReportTool\BugReportTool.sln
+
+nuget restore .\tools\WebcamReportTool\WebcamReportTool.sln
+msbuild -p:Platform=x64 -p:Configuration=Release .\tools\WebcamReportTool\WebcamReportTool.sln
+
+nuget restore .\tools\StylesReportTool\StylesReportTool.sln
+msbuild -p:Platform=x64 -p:Configuration=Release .\tools\StylesReportTool\StylesReportTool.sln
+```
 
 ### Locally compiling the Bug reporting tool
 

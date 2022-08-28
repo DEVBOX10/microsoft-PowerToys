@@ -11,9 +11,10 @@
         xmlns:props="clr-namespace:FancyZonesEditor.Properties"
         xmlns:local1="clr-namespace:FancyZonesEditor.ViewModels"
         xmlns:controls="clr-namespace:ModernWpf.Controls;assembly=ModernWpf"
-        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib" 
+        xmlns:fancyZonesControls="clr-namespace:FancyZonesEditor.Controls"
         mc:Ignorable="d"
-        Title="FancyZones Editor"
+        Title="{x:Static props:Resources.Fancy_Zones_Editor_App_Title}"
         ui:WindowHelper.UseModernWindowStyle="True"
         ui:TitleBar.IsIconVisible="True"
         ui:TitleBar.Background="{DynamicResource TertiaryBackgroundBrush}"
@@ -37,7 +38,7 @@
             <MenuItem Header="{x:Static props:Resources.Edit}"
                       Click="EditLayout_Click">
                 <MenuItem.Icon>
-                    <ui:FontIcon Glyph="&#xE104;" />
+                    <ui:FontIcon Glyph="&#xE70F;" />
                 </MenuItem.Icon>
             </MenuItem>
             <MenuItem Header="{x:Static props:Resources.Edit_zones}"
@@ -69,7 +70,7 @@
                       Click="DeleteLayout_Click"
                       Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
                 <MenuItem.Icon>
-                    <ui:FontIcon Glyph="&#xE107;" />
+                    <ui:FontIcon Glyph="&#xE74D;" />
                 </MenuItem.Icon>
             </MenuItem>
         </ContextMenu>
@@ -84,7 +85,7 @@
                     <ToolTip>
                         <StackPanel>
                             <TextBlock FontWeight="SemiBold">
-                                <Run Text="Monitor" />
+                                <Run Text="{x:Static props:Resources.Monitor}" />
                                 <Run Text="{Binding Index}" />
                             </TextBlock>
                             <TextBlock Text="{Binding Dimensions}" />
@@ -111,7 +112,13 @@
                                FontWeight="SemiBold"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
-                               Opacity="0.6"
+                               Foreground="{Binding (TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContentPresenter}}}" />
+                    <TextBlock Name="ScalingText"
+                               TextTrimming="CharacterEllipsis"
+                               Text="{Binding Scaling}"
+                               Margin="0,0,0,0"
+                               FontSize="8"
+                               HorizontalAlignment="Center"
                                Foreground="{Binding (TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContentPresenter}}}" />
                 </StackPanel>
             </Border>
@@ -160,7 +167,7 @@
                         Style="{StaticResource AccentButtonStyle}"
                         ui:ControlHelper.CornerRadius="36">
                     <Button.Content>
-                        <TextBlock Text="&#xE104;" 
+                        <TextBlock Text="&#xE70F;" 
                                        FontFamily="Segoe MDL2 Assets"
                                         FontSize="14"
                                        AutomationProperties.Name="{x:Static props:Resources.Edit}" />
@@ -168,6 +175,8 @@
                 </Button>
             </Grid>
         </DataTemplate>
+
+        <Style TargetType="{x:Type fancyZonesControls:CustomSlider}" BasedOn="{StaticResource {x:Type Slider}}"></Style>
     </Window.Resources>
 
     <Grid>
@@ -283,7 +292,7 @@
                     Grid.Row="3">
                 <StackPanel Orientation="Horizontal"
                             Margin="8">
-                    <TextBlock Text="&#xE109;"
+                    <TextBlock Text="&#xE710;"
                                AutomationProperties.Name="{x:Static props:Resources.Create_new_layout}"
                                FontFamily="Segoe MDL2 Assets"
                                Foreground="{DynamicResource AccentButtonForeground}" />
@@ -326,6 +335,11 @@
                                  ItemsSource="{Binding MonitorInfoForViewModel}" />
                 </Grid>
             </ScrollViewer>
+            <!--
+                // Commented because of issue https://github.com/microsoft/PowerToys/issues/19828 
+                // Settings would launch under the overlay for FZ Editor
+                //Lots of permutations to validate, Win10/11. Settings not launched, already launched, ...
+
             <Button Click="SettingsBtn_Click"
                     x:Name="settingsBtn"
                     Margin="8"
@@ -341,6 +355,7 @@
                                AutomationProperties.Name="{x:Static props:Resources.OpenSettings}" />
                 </Button.Content>
             </Button>
+            -->
         </Grid>
 
         <ui:ContentDialog x:Name="EditLayoutDialog"
@@ -399,7 +414,7 @@
                             Style="{StaticResource IconOnlyButtonStyle}"
                             Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
                         <Button.Content>
-                            <TextBlock Text="&#xE107;" 
+                            <TextBlock Text="&#xE74D;" 
                                        FontFamily="Segoe MDL2 Assets"
                                        Foreground="#c50500"
                                        AutomationProperties.Name="{x:Static props:Resources.Delete}" />
@@ -478,7 +493,7 @@
                            Margin="24,12,0,24">
                         <local:LayoutPreview />
 
-                        <Button Content="&#xE104;"
+                        <Button Content="&#xE70F;"
                                 x:Name="editZoneLayoutButton"
                                 FontFamily="Segoe MDL2 Assets"
                                 FontSize="14"
@@ -587,21 +602,32 @@
                                        VerticalAlignment="Center"
                                        FontSize="16"
                                        ToolTip="{x:Static props:Resources.Distance_adjacent_zones}"
-                                        AutomationProperties.Name="{x:Static props:Resources.Distance_adjacent_zones}"
-                                       Text="&#xF617;" />
+                                       Text="&#xE78A;" />
 
-                            <ui:NumberBox Text="{Binding SensitivityRadius}"
-                                          Width="216"
-                                          Minimum="0"
-                                          Maximum="1000"
-                                          KeyDown="EditDialogNumberBox_KeyDown"
-                                          Margin="12,0,0,0"
-                                          Loaded="NumberBox_Loaded"
-                                          AutomationProperties.Name="{x:Static props:Resources.Distance_adjacent_zones}"
-                                          AutomationProperties.LabeledBy="{Binding ElementName=distanceTitle}"
-                                          SpinButtonPlacementMode="Compact"
-                                          HorizontalAlignment="Left" />
-                            <TextBlock Text="{x:Static props:Resources.Pixels}"
+                            <fancyZonesControls:CustomSlider x:Name="SensitivityInput"
+                                Value="{Binding SensitivityRadius}"
+                                Minimum="{Binding SensitivityRadiusMinimum}"
+                                Maximum="{Binding SensitivityRadiusMaximum}"
+                                IsMoveToPointEnabled="True"
+                                AutomationProperties.Name="{x:Static props:Resources.Distance_adjacent_zones}"
+                                AutomationProperties.HelpText="{Binding SensitivityRadius}"
+                                ToolTip="{Binding SensitivityRadius}"
+                                ValueChanged="SensitivityInput_ValueChanged"
+                                MinWidth="216"
+                                Margin="12,0,0,0"
+                                HorizontalAlignment="Left"
+                                SmallChange="1" 
+                                LargeChange="10"
+                                DockPanel.Dock="Top"/>
+
+                                <TextBlock
+                                    Text="{Binding SensitivityRadius}"
+                                    Margin="6,8,0,0"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                    TextWrapping="Wrap" />
+
+                                <TextBlock Text="{x:Static props:Resources.Pixels}"
                                        Margin="6,-4,0,0"
                                        FontSize="12"
                                        Foreground="{DynamicResource SecondaryForegroundBrush}"
@@ -643,7 +669,7 @@
                                 <ColumnDefinition Width="32" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="&#xE138;"
+                            <TextBlock Text="&#xF0E2;"
                                        FontSize="16"
                                        Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
                                        Margin="0,4,0,0"

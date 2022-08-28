@@ -6,6 +6,7 @@ using System;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
@@ -25,6 +26,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private Func<string, int> SendConfigMSG { get; }
 
         private string settingsConfigFileFolder = string.Empty;
+
+        private bool _windows11;
 
         private enum MoveWindowBehaviour
         {
@@ -112,6 +115,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _zoneNumberColor = !string.IsNullOrEmpty(numberColor) ? numberColor : ConfigDefaults.DefaultFancyzonesNumberColor;
 
             _isEnabled = GeneralSettingsConfig.Enabled.FancyZones;
+            _windows11 = Helper.Windows11();
+
+            // Disable setting on windows 10
+            if (!_windows11 && DisableRoundCornersOnWindowSnap)
+            {
+                DisableRoundCornersOnWindowSnap = false;
+            }
         }
 
         private bool _isEnabled;
@@ -633,10 +643,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             set
             {
-                // The fallback value is based on ToRGBHex's behavior, which returns
-                // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
-                // This extra handling is added here to deal with FxCop warnings.
-                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
+                value = SettingsUtilities.ToRGBHex(value);
                 if (!value.Equals(_zoneHighlightColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _zoneHighlightColor = value;
@@ -655,10 +662,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             set
             {
-                // The fallback value is based on ToRGBHex's behavior, which returns
-                // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
-                // This extra handling is added here to deal with FxCop warnings.
-                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
+                value = SettingsUtilities.ToRGBHex(value);
                 if (!value.Equals(_zoneBorderColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _zoneBorderColor = value;
@@ -677,10 +681,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             set
             {
-                // The fallback value is based on ToRGBHex's behavior, which returns
-                // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
-                // This extra handling is added here to deal with FxCop warnings.
-                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
+                value = SettingsUtilities.ToRGBHex(value);
                 if (!value.Equals(_zoneInActiveColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _zoneInActiveColor = value;
@@ -699,10 +700,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             set
             {
-                // The fallback value is based on ToRGBHex's behavior, which returns
-                // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
-                // This extra handling is added here to deal with FxCop warnings.
-                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
+                value = SettingsUtilities.ToRGBHex(value);
                 if (!value.Equals(_zoneNumberColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _zoneNumberColor = value;
@@ -845,6 +843,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 }
             }
         }
+
+        public bool Windows11 => _windows11;
 
         private void LaunchEditor()
         {

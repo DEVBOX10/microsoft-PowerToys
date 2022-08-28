@@ -12,11 +12,9 @@ using System.Windows.Forms;
 using Common;
 using Common.Utilities;
 using Microsoft.PowerToys.PreviewHandler.Svg.Telemetry.Events;
-using Microsoft.PowerToys.PreviewHandler.Svg.Utilities;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
-using PreviewHandlerCommon;
 
 namespace Microsoft.PowerToys.PreviewHandler.Svg
 {
@@ -38,7 +36,12 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// <summary>
         /// Name of the virtual host
         /// </summary>
-        public const string VirtualHostName = "PowerToysLocalSvg";
+        private const string VirtualHostName = "PowerToysLocalSvg";
+
+        /// <summary>
+        /// URI of the local file saved with the contents
+        /// </summary>
+        private Uri _localFileURI;
 
         /// <summary>
         /// Gets the path of the current assembly.
@@ -46,7 +49,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// <remarks>
         /// Source: https://stackoverflow.com/a/283917/14774889
         /// </remarks>
-        public static string AssemblyDirectory
+        private static string AssemblyDirectory
         {
             get
             {
@@ -68,11 +71,19 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         private bool _infoBarAdded;
 
         /// <summary>
+        /// Represent WebView2 user data folder path.
+        /// </summary>
+        private string _webView2UserDataFolder = System.Environment.GetEnvironmentVariable("USERPROFILE") +
+                                "\\AppData\\LocalLow\\Microsoft\\PowerToys\\SvgPreview-Temp";
+
+        /// <summary>
         /// Start the preview on the Control.
         /// </summary>
         /// <param name="dataSource">Stream reference to access source file.</param>
         public override void DoPreview<T>(T dataSource)
         {
+            CleanupWebView2UserDataFolder();
+
             string svgData = null;
             bool blocked = false;
 
@@ -88,9 +99,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
 
                 blocked = SvgPreviewHandlerHelper.CheckBlockedElements(svgData);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 PreviewError(ex, dataSource);
                 return;
@@ -98,11 +107,13 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
 
             try
             {
+                // Fixes #17527 - Inkscape v1.1 swapped order of default and svg namespaces in svg file (default first, svg after).
+                // That resulted in parser being unable to parse it correctly and instead of svg, text was previewed.
+                // MS Edge and Firefox also couldn't preview svg files with mentioned order of namespaces definitions.
+                svgData = SvgPreviewHandlerHelper.SwapNamespaces(svgData);
                 svgData = SvgPreviewHandlerHelper.AddStyleSVG(svgData);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = ex.Message });
             }
@@ -125,9 +136,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                     base.DoPreview(dataSource);
                     PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewed());
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     PreviewError(ex, dataSource);
                 }
@@ -158,6 +167,16 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
             }
         }
 
+        // Disable loading resources.
+        private void CoreWebView2_BlockExternalResources(object sender, CoreWebView2WebResourceRequestedEventArgs e)
+        {
+            // Show local file we've saved with the svg contents. Block all else.
+            if (new Uri(e.Request.Uri) != _localFileURI)
+            {
+                e.Response = _browser.CoreWebView2.Environment.CreateWebResourceResponse(null, 403, "Forbidden", null);
+            }
+        }
+
         /// <summary>
         /// Adds a WebView2 Control to Control Collection.
         /// </summary>
@@ -167,10 +186,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
             _browser = new WebView2();
             _browser.Dock = DockStyle.Fill;
 
+            // Prevent new windows from being opened.
+            var webView2Options = new CoreWebView2EnvironmentOptions("--block-new-web-contents");
             ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
                webView2EnvironmentAwaiter = CoreWebView2Environment
-                   .CreateAsync(userDataFolder: System.Environment.GetEnvironmentVariable("USERPROFILE") +
-                                                "\\AppData\\LocalLow\\Microsoft\\PowerToys\\SvgPreview-Temp")
+                   .CreateAsync(userDataFolder: _webView2UserDataFolder, options: webView2Options)
                    .ConfigureAwait(true).GetAwaiter();
             webView2EnvironmentAwaiter.OnCompleted(() =>
             {
@@ -180,13 +200,38 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                     {
                         _webView2Environment = webView2EnvironmentAwaiter.GetResult();
                         await _browser.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
-                        await _browser.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("window.addEventListener('contextmenu', window => {window.preventDefault();});");
-                        _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
+                        _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Deny);
                         _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
-                        _browser.NavigateToString(svgData);
+                        _browser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+                        _browser.CoreWebView2.Settings.AreDevToolsEnabled = false;
+                        _browser.CoreWebView2.Settings.AreHostObjectsAllowed = false;
+                        _browser.CoreWebView2.Settings.IsGeneralAutofillEnabled = false;
+                        _browser.CoreWebView2.Settings.IsPasswordAutosaveEnabled = false;
+                        _browser.CoreWebView2.Settings.IsScriptEnabled = false;
+                        _browser.CoreWebView2.Settings.IsWebMessageEnabled = false;
+
+                        // Don't load any resources.
+                        _browser.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+                        _browser.CoreWebView2.WebResourceRequested += CoreWebView2_BlockExternalResources;
+
+                        // WebView2.NavigateToString() limitation
+                        // See https://docs.microsoft.com/en-us/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
+                        // While testing the limit, it turned out it is ~1.5MB, so to be on a safe side we go for 1.5m bytes
+                        if (svgData.Length > 1_500_000)
+                        {
+                            string filename = _webView2UserDataFolder + "\\" + Guid.NewGuid().ToString() + ".html";
+                            File.WriteAllText(filename, svgData);
+                            _localFileURI = new Uri(filename);
+                            _browser.Source = _localFileURI;
+                        }
+                        else
+                        {
+                            _browser.NavigateToString(svgData);
+                        }
+
                         Controls.Add(_browser);
                     }
-                    catch (NullReferenceException)
+                    catch (Exception)
                     {
                     }
                 });
@@ -223,6 +268,26 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
             _infoBarAdded = true;
             AddTextBoxControl(Properties.Resource.SvgNotPreviewedError);
             base.DoPreview(dataSource);
+        }
+
+        /// <summary>
+        /// Cleanup the previously created tmp html files from svg files bigger than 2MB.
+        /// </summary>
+        private void CleanupWebView2UserDataFolder()
+        {
+            try
+            {
+                // Cleanup temp dir
+                var dir = new DirectoryInfo(_webView2UserDataFolder);
+
+                foreach (var file in dir.EnumerateFiles("*.html"))
+                {
+                    file.Delete();
+                }
+            }
+            catch (Exception)
+            {
+            }
         }
     }
 }

@@ -40,12 +40,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             // Add text box only if the description is not empty. Required for additional plugin options.
             if (!string.IsNullOrWhiteSpace(Description))
             {
-                panel.Children.Add(new TextBlock() { Margin = new Thickness(0, 10, 0, 0), Text = Header });
+                panel.Children.Add(new TextBlock() { Margin = new Thickness(0, 10, 0, 0), Text = Header, TextWrapping = TextWrapping.WrapWholeWords });
                 panel.Children.Add(new IsEnabledTextBlock() { Style = (Style)App.Current.Resources["SecondaryIsEnabledTextBlockStyle"], Text = Description });
             }
             else
             {
-                panel.Children.Add(new TextBlock() { Margin = new Thickness(0, 0, 0, 0), Text = Header });
+                panel.Children.Add(new TextBlock() { Margin = new Thickness(0, 0, 0, 0), Text = Header, TextWrapping = TextWrapping.WrapWholeWords });
             }
 
             _checkBoxSubTextControl.Content = panel;
@@ -59,7 +59,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public static readonly DependencyProperty DescriptionProperty = DependencyProperty.Register(
             "Description",
-            typeof(object),
+            typeof(string),
             typeof(CheckBoxWithDescriptionControl),
             new PropertyMetadata(default(string)));
 

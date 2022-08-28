@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Drawing;
+using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -22,7 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI
     /// </summary>
     public sealed partial class MainWindow : Window
     {
-        public MainWindow()
+        public MainWindow(bool isDark, bool createHidden = false)
         {
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
@@ -36,7 +36,18 @@ namespace Microsoft.PowerToys.Settings.UI
             AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
             appWindow.SetIcon("icon.ico");
 
+            // Passed by parameter, as it needs to be evaluated ASAP, otherwise there is a white flash
+            if (isDark)
+            {
+                ThemeHelpers.SetImmersiveDarkMode(hWnd, isDark);
+            }
+
             var placement = Utils.DeserializePlacementOrDefault(hWnd);
+            if (createHidden)
+            {
+                placement.ShowCmd = NativeMethods.SW_HIDE;
+            }
+
             NativeMethods.SetWindowPlacement(hWnd, ref placement);
 
             ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
@@ -67,7 +78,7 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 if (App.GetOobeWindow() == null)
                 {
-                    App.SetOobeWindow(new OobeWindow(Microsoft.PowerToys.Settings.UI.OOBE.Enums.PowerToysModules.Overview));
+                    App.SetOobeWindow(new OobeWindow(Microsoft.PowerToys.Settings.UI.OOBE.Enums.PowerToysModules.Overview, App.IsDarkTheme()));
                 }
 
                 App.GetOobeWindow().Activate();
@@ -105,12 +116,29 @@ namespace Microsoft.PowerToys.Settings.UI
             ShellPage.Navigate(type);
         }
 
+        public void CloseHiddenWindow()
+        {
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            if (!NativeMethods.IsWindowVisible(hWnd))
+            {
+                Close();
+            }
+        }
+
         private void Window_Closed(object sender, WindowEventArgs args)
         {
-            App.ClearSettingsWindow();
-
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             Utils.SerializePlacement(hWnd);
+
+            if (App.GetOobeWindow() == null)
+            {
+                App.ClearSettingsWindow();
+            }
+            else
+            {
+                args.Handled = true;
+                NativeMethods.ShowWindow(hWnd, NativeMethods.SW_HIDE);
+            }
         }
     }
 }

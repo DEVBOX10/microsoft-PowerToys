@@ -253,9 +253,29 @@ namespace PowerLauncher.ViewModel
             Results.AddRange(newResults);
         }
 
-        public void Sort()
+        public void Sort(MainViewModel.QueryTuningOptions options)
         {
-            var sorted = Results.OrderByDescending(x => x.Result.Score).ToList();
+            List<ResultViewModel> sorted = null;
+
+            if (options.SearchQueryTuningEnabled)
+            {
+                sorted = Results.OrderByDescending(x => (x.Result.Metadata.WeightBoost + x.Result.Score + (x.Result.SelectedCount * options.SearchClickedItemWeight))).ToList();
+            }
+            else
+            {
+                sorted = Results.OrderByDescending(x => (x.Result.Metadata.WeightBoost + x.Result.Score + (x.Result.SelectedCount * 5))).ToList();
+            }
+
+            // remove history items in they are in the list as non-history items
+            foreach (var nonHistoryResult in sorted.Where(x => x.Result.Metadata.Name != "History").ToList())
+            {
+                var historyToRemove = sorted.FirstOrDefault(x => x.Result.Metadata.Name == "History" && x.Result.Title == nonHistoryResult.Result.Title && x.Result.SubTitle == nonHistoryResult.Result.SubTitle);
+                if (historyToRemove != null)
+                {
+                    sorted.Remove(historyToRemove);
+                }
+            }
+
             Clear();
             Results.AddRange(sorted);
         }

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO.Abstractions;
+using System.Text.Json.Serialization;
 using System.Windows;
 using System.Windows.Media;
 
@@ -20,6 +21,8 @@ namespace Wox.Plugin
         private ToolTipData _toolTipData;
         private string _pluginDirectory;
         private string _icoPath;
+
+        public PluginMetadata Metadata { get; set; }
 
         public string Title
         {
@@ -39,6 +42,12 @@ namespace Wox.Plugin
                 _title = value.Replace("\n", " ", StringComparison.Ordinal);
             }
         }
+
+        public bool FromHistory { get; set; }
+
+        public string HistoryPluginID { get; set; }
+
+        public string HistoryTitle { get; set; }
 
         public string SubTitle { get; set; }
 
@@ -96,9 +105,14 @@ namespace Wox.Plugin
         /// <summary>
         /// Gets or sets return true to hide wox after select result
         /// </summary>
+        [JsonIgnore]
         public Func<ActionContext, bool> Action { get; set; }
 
         public int Score { get; set; }
+
+        public int SelectedCount { get; set; }
+
+        public DateTime LastSelected { get; set; } = DateTime.MinValue;
 
         public Result(IList<int> titleHighlightData = null, IList<int> subTitleHighlightData = null)
         {
