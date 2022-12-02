@@ -241,7 +241,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         private bool powerAccent;
 
-        [JsonPropertyName("PowerAccent")]
+        [JsonPropertyName("QuickAccent")]
         public bool PowerAccent
         {
             get => powerAccent;
@@ -257,7 +257,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         private bool powerOCR = true;
 
-        [JsonPropertyName("PowerOCR")]
+        [JsonPropertyName("TextExtractor")]
         public bool PowerOCR
         {
             get => powerOCR;
@@ -283,6 +283,38 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     measureTool = value;
+                }
+            }
+        }
+
+        private bool hosts = true;
+
+        [JsonPropertyName("Hosts")]
+        public bool Hosts
+        {
+            get => hosts;
+            set
+            {
+                if (hosts != value)
+                {
+                    LogTelemetryEvent(value);
+                    hosts = value;
+                }
+            }
+        }
+
+        private bool fileLocksmith = true;
+
+        [JsonPropertyName("File Locksmith")]
+        public bool FileLocksmith
+        {
+            get => fileLocksmith;
+            set
+            {
+                if (fileLocksmith != value)
+                {
+                    LogTelemetryEvent(value);
+                    fileLocksmith = value;
                 }
             }
         }
