@@ -26,6 +26,10 @@
             NotEmptyValue="Visible" />
         <converters:BoolNegationConverter x:Key="BoolNegationConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:BoolToVisibilityConverter
+            x:Key="BoolToInvertedVisibilityConverter"
+            TrueValue="Collapsed"
+            FalseValue="Visible" />
     </Page.Resources>
 
     <Grid>
@@ -43,15 +47,13 @@
                 Command="{x:Bind NewDialogCommand}">
                 <StackPanel
                     Orientation="Horizontal"
-                    Spacing="12">
-                    <TextBlock
+                    Spacing="8">
+                    <FontIcon
                         x:Name="Icon"
-                        Margin="0,0,0,0"
-                        VerticalAlignment="Center"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         FontSize="16"
                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                        Text="&#xe710;" />
+                        Glyph="&#xe710;" />
                     <TextBlock x:Uid="AddEntry" />
                 </StackPanel>
             </Button>
@@ -67,7 +69,7 @@
                     Style="{StaticResource SubtleButtonStyle}">
                     <FontIcon
                         FontFamily="{StaticResource SymbolThemeFontFamily}"
-                        FontSize="14"
+                        FontSize="16"
                         Glyph="&#xe8a5;" />
                 </Button>
 
@@ -77,7 +79,7 @@
                     Style="{StaticResource SubtleButtonStyle}">
                     <FontIcon
                         FontFamily="{StaticResource SymbolThemeFontFamily}"
-                        FontSize="14"
+                        FontSize="16"
                         Glyph="&#xe71c;" />
                     <Button.Flyout>
                         <Flyout>
@@ -116,6 +118,9 @@
                                         </ic:EventTriggerBehavior>
                                     </i:Interaction.Behaviors>
                                 </AutoSuggestBox>
+                                <ToggleSwitch
+                                    x:Uid="ShowOnlyDuplicates"
+                                    IsOn="{x:Bind ViewModel.ShowOnlyDuplicates, Mode=TwoWay}" />
                                 <Button
                                     x:Uid="ClearFiltersBtn"
                                     Margin="0,6,0,0"
@@ -134,7 +139,7 @@
                     Style="{StaticResource SubtleButtonStyle}">
                     <FontIcon
                         FontFamily="{StaticResource SymbolThemeFontFamily}"
-                        FontSize="14"
+                        FontSize="16"
                         Glyph="&#xe8a7;" />
                 </Button>
 
@@ -145,12 +150,11 @@
                     Style="{StaticResource SubtleButtonStyle}">
                     <FontIcon
                         FontFamily="{StaticResource SymbolThemeFontFamily}"
-                        FontSize="14"
+                        FontSize="16"
                         Glyph="&#xe713;" />
                 </Button>
             </StackPanel>
         </Grid>
-
 
         <StackPanel
             Grid.Row="2"
@@ -192,7 +196,8 @@
             IsItemClickEnabled="True"
             ItemClick="Entries_ItemClick"
             ItemsSource="{Binding Entries, Mode=TwoWay}"
-            SelectedItem="{Binding Selected, Mode=TwoWay}">
+            SelectedItem="{Binding Selected, Mode=TwoWay}"
+            Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToInvertedVisibilityConverter}, Mode=OneWay}">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="models:Entry">
                     <Grid
@@ -203,6 +208,7 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="300" />
                             <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
@@ -254,6 +260,7 @@
                             Margin="0,0,8,0"
                             IsActive="{x:Bind Pinging, Mode=OneWay}" />
                         <FontIcon
+                            x:Uid="PingIcon"
                             x:Name="PingIcon"
                             Grid.Column="2"
                             Margin="0,0,8,0"
@@ -306,9 +313,18 @@
                                 </ic:DataTriggerBehavior>
                             </i:Interaction.Behaviors>
                         </FontIcon>
+                        <FontIcon
+                            x:Uid="DuplicateEntryIcon"
+                            Grid.Column="3"
+                            Margin="0,0,8,0"
+                            Foreground="{StaticResource SystemControlErrorTextForegroundBrush}"
+                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                            FontSize="18"
+                            Glyph="&#xe7BA;"
+                            Visibility="{x:Bind Duplicate, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                         <ToggleSwitch
                             x:Uid="ActiveToggle"
-                            Grid.Column="3"
+                            Grid.Column="4"
                             Width="40"
                             MinWidth="0"
                             HorizontalAlignment="Right"
@@ -319,6 +335,12 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+
+        <ProgressRing
+            Width="48"
+            Height="48"
+            Grid.Row="1"
+            IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
 
         <ContentDialog
             x:Name="EntryDialog"
@@ -384,7 +406,6 @@
                 ScrollViewer.VerticalScrollBarVisibility="Visible"
                 ScrollViewer.VerticalScrollMode="Enabled"
                 TextWrapping="Wrap" />
-
         </ContentDialog>
     </Grid>
 </Page>

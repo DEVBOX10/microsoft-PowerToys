@@ -158,13 +158,17 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"modules/Awake/PowerToys.AwakeModuleInterface.dll",
             L"modules/MouseUtils/PowerToys.FindMyMouse.dll",
             L"modules/MouseUtils/PowerToys.MouseHighlighter.dll",
+            L"modules/MouseUtils/PowerToys.MouseJump.dll",
             L"modules/AlwaysOnTop/PowerToys.AlwaysOnTopModuleInterface.dll",
             L"modules/MouseUtils/PowerToys.MousePointerCrosshairs.dll",
             L"modules/PowerAccent/PowerToys.PowerAccentModuleInterface.dll",
             L"modules/PowerOCR/PowerToys.PowerOCRModuleInterface.dll",
+            L"modules/PastePlain/PowerToys.PastePlainModuleInterface.dll",
             L"modules/FileLocksmith/PowerToys.FileLocksmithExt.dll",
+            L"modules/RegistryPreview/PowerToys.RegistryPreviewExt.dll",
             L"modules/MeasureTool/PowerToys.MeasureToolModuleInterface.dll",
             L"modules/Hosts/PowerToys.HostsModuleInterface.dll",
+            L"modules/Peek/PowerToys.Peek.dll",
         };
         const auto VCM_PATH = L"modules/VideoConference/PowerToys.VideoConferenceModule.dll";
         if (const auto mf = LoadLibraryA("mf.dll"))
@@ -173,7 +177,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             knownModules.emplace_back(VCM_PATH);
         }
 
-        for (const auto& moduleSubdir : knownModules)
+        for (auto moduleSubdir : knownModules)
         {
             try
             {
@@ -203,7 +207,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             {
                 window = winrt::to_hstring(settingsWindow);
             }
-            open_settings_window(window);
+            open_settings_window(window, false);
         }
 
         if (openOobe)
@@ -389,6 +393,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         case toast_notification_handler_result::exit_success:
             return 0;
         }
+        [[fallthrough]];
     case SpecialMode::ReportSuccessfulUpdate:
     {
         notifications::remove_toasts_by_tag(notifications::UPDATING_PROCESS_TOAST_TAG);

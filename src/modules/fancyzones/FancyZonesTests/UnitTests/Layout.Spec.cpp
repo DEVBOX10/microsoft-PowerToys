@@ -65,8 +65,8 @@ namespace FancyZonesUnitTests
             for (const auto& zoneRect : zones)
             {
                 json::JsonObject zone{};
-                zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::XID, json::value(zoneRect.left));
-                zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::YID, json::value(zoneRect.top));
+                zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::XAxisID, json::value(zoneRect.left));
+                zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::YAxisID, json::value(zoneRect.top));
                 zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::WidthID, json::value(zoneRect.right - zoneRect.left));
                 zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::HeightID, json::value(zoneRect.bottom - zoneRect.top));
                 zonesArray.Append(zone);
@@ -212,7 +212,7 @@ namespace FancyZonesUnitTests
             RECT{ .left = 0, .top = 0, .right = 1920, .bottom = 1080 }
         };
 
-        void checkZones(const std::unique_ptr<Layout>& layout, ZoneSetLayoutType type, size_t expectedCount, RECT rect)
+        void checkZones(const Layout* layout, ZoneSetLayoutType type, size_t expectedCount, RECT rect)
         {
             const auto& zones = layout->Zones();
             Assert::AreEqual(expectedCount, zones.size());
@@ -259,7 +259,7 @@ namespace FancyZonesUnitTests
                     auto layout = std::make_unique<Layout>(data);
                     auto result = layout->Init(rect, Mocks::Monitor());
                     Assert::IsTrue(result);
-                    checkZones(layout, static_cast<ZoneSetLayoutType>(type), zoneCount, rect);
+                    checkZones(layout.get(), static_cast<ZoneSetLayoutType>(type), zoneCount, rect);
                 }
             }
         }
@@ -294,7 +294,7 @@ namespace FancyZonesUnitTests
                     auto layout = std::make_unique<Layout>(data);
                     auto result = layout->Init(rect, Mocks::Monitor());
                     Assert::IsTrue(result);
-                    checkZones(layout, static_cast<ZoneSetLayoutType>(type), data.zoneCount, rect);
+                    checkZones(layout.get(), static_cast<ZoneSetLayoutType>(type), data.zoneCount, rect);
                 }
             }
         }
@@ -413,7 +413,7 @@ namespace FancyZonesUnitTests
                     auto layout = std::make_unique<Layout>(data);
                     auto result = layout->Init(rect, Mocks::Monitor());
                     Assert::IsTrue(result);
-                    checkZones(layout, static_cast<ZoneSetLayoutType>(type), zoneCount, rect);
+                    checkZones(layout.get(), static_cast<ZoneSetLayoutType>(type), zoneCount, rect);
                 }
             }
         }

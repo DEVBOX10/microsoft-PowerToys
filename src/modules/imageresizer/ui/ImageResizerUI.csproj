@@ -8,8 +8,17 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <UseWPF>true</UseWPF>
+    <SelfContained>true</SelfContained>
   </PropertyGroup>
-  
+
+  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
+    <RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
+  </PropertyGroup>
+
   <PropertyGroup>
     <ProjectGuid>{2BE46397-4DFA-414C-9BD4-41E4BBF8CB34}</ProjectGuid>
     <OutputType>WinExe</OutputType>
@@ -44,12 +53,10 @@
     <Resource Include="Resources\ImageResizer.png" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
-    <PackageReference Include="ModernWpfUI" Version="0.9.4" />
-    <PackageReference Include="System.IO.Abstractions">
-      <Version>17.2.3</Version>
-    </PackageReference>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
+    <PackageReference Include="ModernWpfUI" />
+    <PackageReference Include="System.IO.Abstractions" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />

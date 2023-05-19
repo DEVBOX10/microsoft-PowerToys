@@ -14,7 +14,7 @@
         x:Uid="MeasureTool"
         ModuleImageSource="ms-appx:///Assets/Modules/ScreenRuler.png">
         <controls:SettingsPageControl.ModuleContent>
-            <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <labs:SettingsCard
                     x:Uid="MeasureTool_EnableMeasureTool"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsScreenRuler.png}"
@@ -38,6 +38,15 @@
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+                    <labs:SettingsCard x:Uid="MeasureTool_DefaultMeasureStyle">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.DefaultMeasureStyle, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="MeasureTool_DefaultMeasureStyle_None"/>
+                            <ComboBoxItem x:Uid="MeasureTool_DefaultMeasureStyle_Bounds" />
+                            <ComboBoxItem x:Uid="MeasureTool_DefaultMeasureStyle_Spacing" />
+                            <ComboBoxItem x:Uid="MeasureTool_DefaultMeasureStyle_Horizontal_Spacing" />
+                            <ComboBoxItem x:Uid="MeasureTool_DefaultMeasureStyle_Vertical_Spacing" />
+                        </ComboBox>
                     </labs:SettingsCard>
 
                 </controls:SettingsGroup>

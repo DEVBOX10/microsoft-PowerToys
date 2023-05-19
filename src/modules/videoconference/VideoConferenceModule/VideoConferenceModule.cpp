@@ -26,6 +26,7 @@ VideoConferenceModule* instance = nullptr;
 
 VideoConferenceSettings VideoConferenceModule::settings;
 Toolbar VideoConferenceModule::toolbar;
+bool VideoConferenceModule::pushToTalkPressed = false;
 
 HHOOK VideoConferenceModule::hook_handle;
 
@@ -123,10 +124,10 @@ LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM w
 {
     if (nCode == HC_ACTION)
     {
+        KBDLLHOOKSTRUCT* kbd = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
         switch (wParam)
         {
         case WM_KEYDOWN:
-            KBDLLHOOKSTRUCT* kbd = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
 
             if (isHotkeyPressed(kbd->vkCode, settings.cameraAndMicrophoneMuteHotkey))
             {
@@ -163,9 +164,29 @@ LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM w
                 reverseMicrophoneMute();
                 return 1;
             }
+            else if (isHotkeyPressed(kbd->vkCode, settings.microphonePushToTalkHotkey))
+            {
+                if (!pushToTalkPressed)
+                {
+                    if (settings.pushToReverseEnabled || getMicrophoneMuteState())
+                    {
+                        reverseMicrophoneMute();
+                    }
+                    pushToTalkPressed = true;
+                }
+                return 1;
+            }
             else if (isHotkeyPressed(kbd->vkCode, settings.cameraMuteHotkey))
             {
                 reverseVirtualCameraMuteState();
+                return 1;
+            }
+            break;
+        case WM_KEYUP:
+            if (pushToTalkPressed && (kbd->vkCode == settings.microphonePushToTalkHotkey.get_code()))
+            {
+                reverseMicrophoneMute();
+                pushToTalkPressed = false;
                 return 1;
             }
         }
@@ -227,6 +248,14 @@ void VideoConferenceModule::onModuleSettingsChanged()
             if (const auto val = values.get_json(L"mute_microphone_hotkey"))
             {
                 settings.microphoneMuteHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
+            }
+            if (const auto val = values.get_json(L"push_to_talk_microphone_hotkey"))
+            {
+                settings.microphonePushToTalkHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
+            }
+            if (const auto val = values.get_bool_value(L"push_to_reverse_enabled"))
+            {
+                settings.pushToReverseEnabled = *val;
             }
             if (const auto val = values.get_json(L"mute_camera_hotkey"))
             {
@@ -311,11 +340,7 @@ void VideoConferenceModule::onMicrophoneConfigurationChanged()
     }
 }
 
-VideoConferenceModule::VideoConferenceModule() :
-    _generalSettingsWatcher{ PTSettingsHelper::get_powertoys_general_save_file_location(), [this] {
-                                toolbar.scheduleGeneralSettingsUpdate();
-                            } },
-    _moduleSettingsWatcher{ PTSettingsHelper::get_module_save_file_location(get_key()), [this] { toolbar.scheduleModuleSettingsUpdate(); } }
+VideoConferenceModule::VideoConferenceModule()
 {
     init_settings();
     _settingsUpdateChannel =
@@ -323,7 +348,14 @@ VideoConferenceModule::VideoConferenceModule() :
     if (_settingsUpdateChannel)
     {
         _settingsUpdateChannel->access([](auto memory) {
+
+// Suppress warning 26403 -  Reset or explicitly delete an owner<T> pointer 'variable' (r.3)
+// the video conference class should be only instantiated once and it is using placement new
+// the access to the data can be done through memory._data
+#pragma warning(push)
+#pragma warning(disable : 26403)
             auto updatesChannel = new (memory._data) CameraSettingsUpdateChannel{};
+#pragma warning(pop)
         });
     }
     sendSourceCameraNameUpdate();
@@ -382,6 +414,14 @@ void VideoConferenceModule::init_settings()
         if (const auto val = powerToysSettings.get_json(L"mute_microphone_hotkey"))
         {
             settings.microphoneMuteHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
+        }
+        if (const auto val = powerToysSettings.get_json(L"push_to_talk_microphone_hotkey"))
+        {
+            settings.microphonePushToTalkHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
+        }
+        if (const auto val = powerToysSettings.get_bool_value(L"push_to_reverse_enabled"))
+        {
+            settings.pushToReverseEnabled = *val;
         }
         if (const auto val = powerToysSettings.get_json(L"mute_camera_hotkey"))
         {
@@ -524,6 +564,15 @@ void VideoConferenceModule::enable()
 {
     if (!_enabled)
     {
+        _generalSettingsWatcher = std::make_unique<FileWatcher>(
+            PTSettingsHelper::get_powertoys_general_save_file_location(), [this] {
+                toolbar.scheduleGeneralSettingsUpdate();
+            });
+        _moduleSettingsWatcher = std::make_unique<FileWatcher>(
+            PTSettingsHelper::get_module_save_file_location(get_key()), [this] {
+                toolbar.scheduleModuleSettingsUpdate();
+            });
+
         toggleProxyCamRegistration(true);
         toolbar.setMicrophoneMute(getMicrophoneMuteState());
         toolbar.setCameraMute(getVirtualCameraMuteState());
@@ -572,6 +621,8 @@ void VideoConferenceModule::disable()
 {
     if (_enabled)
     {
+        _generalSettingsWatcher.reset();
+        _moduleSettingsWatcher.reset();
         toggleProxyCamRegistration(false);
         if (hook_handle)
         {

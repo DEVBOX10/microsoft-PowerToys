@@ -41,8 +41,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void CountWithoutPluginKeyword(string typedString, int expectedResultCount)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString);
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString);
 
             // Act
             var result = main.Object.Query(expectedQuery).Count;
@@ -52,19 +52,19 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow("(time", 16)]
-        [DataRow("(date", 24)]
+        [DataRow("(time", 17)]
+        [DataRow("(date", 25)]
         [DataRow("(year", 7)]
-        [DataRow("(now", 30)]
-        [DataRow("(current", 30)]
-        [DataRow("(", 30)]
+        [DataRow("(now", 31)]
+        [DataRow("(current", 31)]
+        [DataRow("(", 31)]
         [DataRow("(now::10:10:10", 1)] // Windows file time
         [DataRow("(current::10:10:10", 0)]
         public void CountWithPluginKeyword(string typedString, int expectedResultCount)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString, "(");
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString, "(");
 
             // Act
             var result = main.Object.Query(expectedQuery);
@@ -87,8 +87,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void ValidateBehaviorOnGlobalQueries(string typedString, int expectedResultCount)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString);
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString);
 
             // Act
             var result = main.Object.Query(expectedQuery);
@@ -141,8 +141,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void CanFindFormatResult(string typedString, string expectedResult)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString, "(");
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString, "(");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault(x => x.SubTitle.StartsWith(expectedResult, StringComparison.CurrentCulture));
@@ -160,8 +160,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void DateTimeNumberOnlyInput(string typedString, string expectedResult)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString, "(");
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString, "(");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault(x => x.SubTitle.StartsWith(expectedResult, StringComparison.CurrentCulture));
@@ -188,8 +188,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void InvalidInputNotShowsResults(string typedString)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString, "(");
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString, "(");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault();
@@ -206,8 +206,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void InvalidNumberInputShowsErrorMessage(string typedString)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString, "(");
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString, "(");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault().Title;
@@ -224,8 +224,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void InvalidInputNotShowsErrorMessage(string typedString)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString, "(");
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString, "(");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault();

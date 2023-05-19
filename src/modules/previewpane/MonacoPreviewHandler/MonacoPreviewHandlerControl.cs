@@ -2,18 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Drawing;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using Common;
-using Microsoft.PowerToys.PreviewHandler.Monaco.Formatters;
-using Microsoft.PowerToys.PreviewHandler.Monaco.Helpers;
+using ManagedCommon;
 using Microsoft.PowerToys.PreviewHandler.Monaco.Properties;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
@@ -27,15 +19,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// Settings class
         /// </summary>
         private readonly Settings _settings = new Settings();
-
-        /// <summary>
-        /// Formatters applied before rendering the preview
-        /// </summary>
-        private readonly IReadOnlyCollection<IFormatter> _formatters = new List<IFormatter>
-        {
-            new JsonFormatter(),
-            new XmlFormatter(),
-        }.AsReadOnly();
 
         /// <summary>
         /// Text box to display the information about blocked elements from Svg.
@@ -78,11 +61,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         private Label _loadingBackground;
 
         /// <summary>
-        /// Name of the virtual host
-        /// </summary>
-        public const string VirtualHostName = "PowerToysLocalMonaco";
-
-        /// <summary>
         /// HTML code passed to the file
         /// </summary>
 #nullable enable
@@ -107,13 +85,10 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredMonacoPreviewEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
                 // GPO is disabling this utility. Show an error message instead.
-                InvokeOnControlThread(() =>
-                {
-                    _infoBarAdded = true;
-                    AddTextBoxControl(Properties.Resources.GpoDisabledErrorText);
-                    Resize += FormResized;
-                    base.DoPreview(dataSource);
-                });
+                _infoBarAdded = true;
+                AddTextBoxControl(Properties.Resources.GpoDisabledErrorText);
+                Resize += FormResized;
+                base.DoPreview(dataSource);
 
                 return;
             }
@@ -132,7 +107,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             // Checks if dataSource is a string
             if (!(dataSource is string filePath))
             {
-                throw new ArgumentException($"{nameof(dataSource)} for {nameof(MonacoPreviewHandler)} must be a string but was a '{typeof(T)}'");
+                throw new ArgumentException($"{nameof(dataSource)} for {nameof(MonacoPreviewHandlerControl)} must be a string but was a '{typeof(T)}'");
             }
 
             // Check if the file is too big.
@@ -140,108 +115,95 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
 
             if (fileSize < _settings.MaxFileSize)
             {
-                Task initializeIndexFileAndSelectedFileTask = new Task(() => { InitializeIndexFileAndSelectedFile(filePath); });
-                initializeIndexFileAndSelectedFileTask.Start();
-
                 try
                 {
-                    InvokeOnControlThread(() =>
+                    InitializeIndexFileAndSelectedFile(filePath);
+
+                    Logger.LogInfo("Create WebView2 environment");
+                    ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
+                        webView2EnvironmentAwaiter = CoreWebView2Environment
+                            .CreateAsync(userDataFolder: System.Environment.GetEnvironmentVariable("USERPROFILE") +
+                                                            "\\AppData\\LocalLow\\Microsoft\\PowerToys\\MonacoPreview-Temp")
+                            .ConfigureAwait(true).GetAwaiter();
+                    webView2EnvironmentAwaiter.OnCompleted(async () =>
                     {
-                        Logger.LogInfo("Create WebView2 environment");
-                        ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
-                            webView2EnvironmentAwaiter = CoreWebView2Environment
-                                .CreateAsync(userDataFolder: System.Environment.GetEnvironmentVariable("USERPROFILE") +
-                                                             "\\AppData\\LocalLow\\Microsoft\\PowerToys\\MonacoPreview-Temp")
-                                .ConfigureAwait(true).GetAwaiter();
-                        webView2EnvironmentAwaiter.OnCompleted(() =>
+                        _loadingBar.Value = 60;
+                        this.Update();
+                        try
                         {
-                            _loadingBar.Value = 60;
-                            this.Update();
-                            InvokeOnControlThread(async () =>
+                            if (CoreWebView2Environment.GetAvailableBrowserVersionString() == null)
                             {
-                                try
-                                {
-                                    if (CoreWebView2Environment.GetAvailableBrowserVersionString() == null)
-                                    {
-                                        throw new WebView2RuntimeNotFoundException();
-                                    }
+                                throw new WebView2RuntimeNotFoundException();
+                            }
 
-                                    _webView2Environment = webView2EnvironmentAwaiter.GetResult();
+                            _webView2Environment = webView2EnvironmentAwaiter.GetResult();
 
-                                    _loadingBar.Value = 70;
-                                    this.Update();
+                            _loadingBar.Value = 70;
+                            this.Update();
 
-                                    // Initialize WebView
-                                    try
-                                    {
-                                        await _webView.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
+                            // Initialize WebView
+                            try
+                            {
+                                await _webView.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
 
-                                        // Wait until html is loaded
-                                        initializeIndexFileAndSelectedFileTask.Wait();
+                                _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(FilePreviewCommon.MonacoHelper.VirtualHostName, Settings.AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
 
-                                        _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, Settings.AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
+                                Logger.LogInfo("Navigates to string of HTML file");
 
-                                        Logger.LogInfo("Navigates to string of HTML file");
+                                _webView.NavigateToString(_html);
+                                _webView.NavigationCompleted += WebView2Init;
+                                _webView.Height = this.Height;
+                                _webView.Width = this.Width;
+                                Controls.Add(_webView);
+                                _webView.SendToBack();
+                                _loadingBar.Value = 100;
+                                this.Update();
+                            }
+                            catch (NullReferenceException e)
+                            {
+                                Logger.LogError("NullReferenceException catched. Skipping exception.", e);
+                            }
+                        }
+                        catch (WebView2RuntimeNotFoundException e)
+                        {
+                            Logger.LogWarning("WebView2 was not found:");
+                            Logger.LogWarning(e.Message);
+                            Controls.Remove(_loading);
+                            Controls.Remove(_loadingBar);
+                            Controls.Remove(_loadingBackground);
 
-                                        _webView.NavigateToString(_html);
-                                        _webView.NavigationCompleted += WebView2Init;
-                                        _webView.Height = this.Height;
-                                        _webView.Width = this.Width;
-                                        Controls.Add(_webView);
-                                        _webView.SendToBack();
-                                        _loadingBar.Value = 100;
-                                        this.Update();
-                                    }
-                                    catch (NullReferenceException e)
-                                    {
-                                        Logger.LogError("NullReferenceException catched. Skipping exception.", e);
-                                    }
-                                }
-                                catch (WebView2RuntimeNotFoundException e)
-                                {
-                                    Logger.LogWarning("WebView2 was not found:");
-                                    Logger.LogWarning(e.Message);
-                                    Controls.Remove(_loading);
-                                    Controls.Remove(_loadingBar);
-                                    Controls.Remove(_loadingBackground);
+                            // WebView2 not installed message
+                            Label errorMessage = new Label();
+                            errorMessage.Text = Resources.WebView2_Not_Installed_Message;
+                            errorMessage.Width = TextRenderer.MeasureText(Resources.WebView2_Not_Installed_Message, errorMessage.Font).Width + 10;
+                            errorMessage.Height = TextRenderer.MeasureText(Resources.WebView2_Not_Installed_Message, errorMessage.Font).Height;
+                            Controls.Add(errorMessage);
 
-                                    // WebView2 not installed message
-                                    Label errorMessage = new Label();
-                                    errorMessage.Text = Resources.WebView2_Not_Installed_Message;
-                                    errorMessage.Width = TextRenderer.MeasureText(Resources.WebView2_Not_Installed_Message, errorMessage.Font).Width + 10;
-                                    errorMessage.Height = TextRenderer.MeasureText(Resources.WebView2_Not_Installed_Message, errorMessage.Font).Height;
-                                    Controls.Add(errorMessage);
-
-                                    // Download Link
-                                    Label downloadLink = new LinkLabel();
-                                    downloadLink.Text = Resources.Download_WebView2;
-                                    downloadLink.Click += DownloadLink_Click;
-                                    downloadLink.Top = TextRenderer.MeasureText(Resources.WebView2_Not_Installed_Message, errorMessage.Font).Height + 10;
-                                    downloadLink.Width = TextRenderer.MeasureText(Resources.Download_WebView2, errorMessage.Font).Width + 10;
-                                    downloadLink.Height = TextRenderer.MeasureText(Resources.Download_WebView2, errorMessage.Font).Height;
-                                    Controls.Add(downloadLink);
-                                }
-                            });
-                        });
+                            // Download Link
+                            Label downloadLink = new LinkLabel();
+                            downloadLink.Text = Resources.Download_WebView2;
+                            downloadLink.Click += DownloadLink_Click;
+                            downloadLink.Top = TextRenderer.MeasureText(Resources.WebView2_Not_Installed_Message, errorMessage.Font).Height + 10;
+                            downloadLink.Width = TextRenderer.MeasureText(Resources.Download_WebView2, errorMessage.Font).Width + 10;
+                            downloadLink.Height = TextRenderer.MeasureText(Resources.Download_WebView2, errorMessage.Font).Height;
+                            downloadLink.ForeColor = Settings.TextColor;
+                            Controls.Add(downloadLink);
+                        }
                     });
+                }
+                catch (UnauthorizedAccessException e)
+                {
+                    Logger.LogError(e.Message);
+                    AddTextBoxControl(Resources.Access_Denied_Exception_Message);
                 }
                 catch (Exception e)
                 {
-                    InvokeOnControlThread(() =>
-                    {
-                        Controls.Remove(_loading);
-                        Controls.Remove(_loadingBar);
-                        Controls.Remove(_loadingBackground);
-                        Label text = new Label();
-                        text.Text = Resources.Exception_Occurred;
-                        text.Text += e.Message;
-                        text.Text += "\n" + e.Source;
-                        text.Text += "\n" + e.StackTrace;
-                        text.Width = 500;
-                        text.Height = 10000;
-                        Controls.Add(text);
-                        Logger.LogError(e.Message);
-                    });
+                    Logger.LogError(e.Message);
+                    string errorMessage = Resources.Exception_Occurred;
+                    errorMessage += e.Message;
+                    errorMessage += "\n" + e.Source;
+                    errorMessage += "\n" + e.StackTrace;
+                    AddTextBoxControl(errorMessage);
                 }
 
                 this.Resize += FormResize;
@@ -249,18 +211,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             else
             {
                 Logger.LogInfo("File is too big to display. Showing error message");
-                InvokeOnControlThread(() =>
-                {
-                    Controls.Remove(_loading);
-                    _loadingBar.Dispose();
-                    Controls.Remove(_loadingBar);
-                    Controls.Remove(_loadingBackground);
-                    Label errorMessage = new Label();
-                    errorMessage.Text = Resources.Max_File_Size_Error.Replace("%1", (_settings.MaxFileSize / 1000).ToString(CultureInfo.CurrentCulture), StringComparison.InvariantCulture);
-                    errorMessage.Width = 500;
-                    errorMessage.Height = 50;
-                    Controls.Add(errorMessage);
-                });
+                AddTextBoxControl(Resources.Max_File_Size_Error.Replace("%1", (_settings.MaxFileSize / 1000).ToString(CultureInfo.CurrentCulture), StringComparison.InvariantCulture));
             }
         }
 
@@ -350,46 +301,41 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         private void SetBackground()
         {
             Logger.LogTrace();
-            InvokeOnControlThread(() =>
-            {
-                this.BackColor = Settings.BackgroundColor;
-            });
+            this.BackColor = Settings.BackgroundColor;
         }
 
         private void InitializeLoadingScreen()
         {
             Logger.LogTrace();
-            InvokeOnControlThread(() =>
-            {
-                _loadingBackground = new Label();
-                _loadingBackground.BackColor = Settings.BackgroundColor;
-                _loadingBackground.Width = this.Width;
-                _loadingBackground.Height = this.Height;
-                Controls.Add(_loadingBackground);
-                _loadingBackground.BringToFront();
+            _loadingBackground = new Label();
+            _loadingBackground.BackColor = Settings.BackgroundColor;
+            _loadingBackground.Width = this.Width;
+            _loadingBackground.Height = this.Height;
+            Controls.Add(_loadingBackground);
+            _loadingBackground.BringToFront();
 
-                _loadingBar = new ProgressBar();
-                _loadingBar.Width = this.Width - 10;
-                _loadingBar.Location = new Point(5, this.Height / 2);
-                _loadingBar.Maximum = 100;
-                _loadingBar.Value = 10;
-                Controls.Add(_loadingBar);
+            _loadingBar = new ProgressBar();
+            _loadingBar.Width = this.Width - 10;
+            _loadingBar.Location = new Point(5, this.Height / 2);
+            _loadingBar.Maximum = 100;
+            _loadingBar.Value = 10;
+            Controls.Add(_loadingBar);
 
-                _loading = new Label();
-                _loading.Text = Resources.Loading_Screen_Message;
-                _loading.Width = this.Width;
-                _loading.Height = 45;
-                _loading.Location = new Point(0, _loadingBar.Location.Y - _loading.Height);
-                _loading.TextAlign = ContentAlignment.TopCenter;
-                _loading.Font = new Font("MS Sans Serif", 16, FontStyle.Bold);
-                _loading.ForeColor = Settings.TextColor;
-                Controls.Add(_loading);
+            _loading = new Label();
+            _loading.Text = Resources.Loading_Screen_Message;
+            _loading.Width = this.Width;
+            _loading.Height = 45;
+            _loading.Location = new Point(0, _loadingBar.Location.Y - _loading.Height);
+            _loading.TextAlign = ContentAlignment.TopCenter;
+            _loading.Font = new Font("MS Sans Serif", 16, FontStyle.Bold);
+            _loading.ForeColor = Settings.TextColor;
+            Controls.Add(_loading);
 
-                _loading.BringToFront();
-                _loadingBar.BringToFront();
+            _loading.BringToFront();
+            _loadingBar.BringToFront();
 
-                this.Update();
-            });
+            this.Update();
+
             Logger.LogInfo("Loading screen initialized");
         }
 
@@ -405,7 +351,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
 
                 if (_settings.TryFormat)
                 {
-                    var formatter = _formatters.SingleOrDefault(f => f.LangSet == _vsCodeLangSet);
+                    var formatter = FilePreviewCommon.MonacoHelper.Formatters.SingleOrDefault(f => f.LangSet == _vsCodeLangSet);
                     if (formatter != null)
                     {
                         try
@@ -425,19 +371,12 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             }
 
             // prepping index html to load in
-            using (StreamReader htmlFileReader = new StreamReader(new FileStream(Settings.AssemblyDirectory + "\\index.html", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
-            {
-                Logger.LogInfo("Starting reading HTML source file");
-                _html = htmlFileReader.ReadToEnd();
-                htmlFileReader.Close();
-                Logger.LogInfo("Reading HTML source file ended");
-            }
-
+            _html = FilePreviewCommon.MonacoHelper.ReadIndexHtml();
             _html = _html.Replace("[[PT_LANG]]", _vsCodeLangSet, StringComparison.InvariantCulture);
             _html = _html.Replace("[[PT_WRAP]]", _settings.Wrap ? "1" : "0", StringComparison.InvariantCulture);
             _html = _html.Replace("[[PT_THEME]]", Settings.GetTheme(), StringComparison.InvariantCulture);
             _html = _html.Replace("[[PT_CODE]]", _base64FileCode, StringComparison.InvariantCulture);
-            _html = _html.Replace("[[PT_URL]]", VirtualHostName, StringComparison.InvariantCulture);
+            _html = _html.Replace("[[PT_URL]]", FilePreviewCommon.MonacoHelper.VirtualHostName, StringComparison.InvariantCulture);
         }
 
         private async void DownloadLink_Click(object sender, EventArgs e)
@@ -476,6 +415,10 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// <param name="message">Message to be displayed in textbox.</param>
         private void AddTextBoxControl(string message)
         {
+            Controls.Remove(_loading);
+            Controls.Remove(_loadingBar);
+            Controls.Remove(_loadingBackground);
+
             _textBox = new RichTextBox();
             _textBox.Text = message;
             _textBox.BackColor = Color.LightYellow;

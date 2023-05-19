@@ -8,6 +8,9 @@
 
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/utils/json.h>
+#include <common/utils/registry.h>
+
+using namespace registry::install_scope;
 
 namespace // Strings in this namespace should not be localized
 {
@@ -42,9 +45,16 @@ namespace updating
     std::pair<Uri, std::wstring> extract_installer_asset_download_info(const json::JsonObject& release_object)
     {
         const std::wstring_view required_architecture = get_architecture_string(get_current_architecture());
-        constexpr const std::wstring_view required_filename_pattern = updating::INSTALLER_FILENAME_PATTERN;
+        std::wstring_view required_filename_pattern = updating::INSTALLER_FILENAME_PATTERN;
         // Desc-sorted by its priority
         const std::array<std::wstring_view, 2> asset_extensions = { L".exe", L".msi" };
+
+        const InstallScope current_install_scope = get_current_install_scope();
+        if (current_install_scope == InstallScope::PerUser)
+        {
+            required_filename_pattern = updating::INSTALLER_FILENAME_PATTERN_USER;
+        }
+
         for (const auto asset_extension : asset_extensions)
         {
             for (auto asset_elem : release_object.GetNamedArray(L"assets"))
@@ -67,6 +77,10 @@ namespace updating
         throw std::runtime_error("Release object doesn't have the required asset");
     }
 
+// disabling warning 4702 - unreachable code
+// prevent the warning that may show up depend on the value of the constants (#defines)
+#pragma warning(push)
+#pragma warning(disable : 4702)
     std::future<nonstd::expected<github_version_info, std::wstring>> get_github_version_info_async(const bool prerelease)
     {
         // If the current version starts with 0.0.*, it means we're on a local build from a farm and shouldn't check for updates.
@@ -126,6 +140,7 @@ namespace updating
         }
         co_return nonstd::make_unexpected(NETWORK_ERROR);
     }
+#pragma warning(pop)
 
     std::filesystem::path get_pending_updates_path()
     {

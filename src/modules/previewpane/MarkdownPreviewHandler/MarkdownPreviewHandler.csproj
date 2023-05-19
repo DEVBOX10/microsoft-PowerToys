@@ -1,5 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyTitle>PowerToys.MarkdownPreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys MarkdownPreviewHandler</AssemblyDescription>
@@ -12,12 +13,20 @@
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <RuntimeIdentifiers>win10-x64;win10-arm64</RuntimeIdentifiers>
     <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+
+  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
+    <RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup>
     <ProjectGuid>{6A71162E-FC4C-4A2C-B90F-3CF94F59A9BB}</ProjectGuid>
     <RootNamespace>Microsoft.PowerToys.PreviewHandler.Markdown</RootNamespace>
-    <EnableComHosting>true</EnableComHosting>
     <AssemblyName>PowerToys.MarkdownPreviewHandler</AssemblyName>
   </PropertyGroup>
 
@@ -46,18 +55,20 @@
   <PropertyGroup>
     <!-- Disable missing comment warning. WinRT/C++ libraries added won't have comments on their reflections. -->
     <NoWarn>$(NoWarn);1591</NoWarn>
+    <OutputType>WinExe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Markdig.Signed" Version="0.27.0" />
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1343.22" />
-    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
-    <PackageReference Include="System.IO.Abstractions" Version="17.2.3" />
+    <PackageReference Include="Microsoft.Web.WebView2" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
+    <PackageReference Include="System.IO.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\common\FilePreviewCommon\FilePreviewCommon.csproj" />
     <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\common\PreviewHandlerCommon.csproj" />
   </ItemGroup>

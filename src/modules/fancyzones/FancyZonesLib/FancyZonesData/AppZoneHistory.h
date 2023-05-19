@@ -36,8 +36,9 @@ public:
         std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
 #if defined(UNIT_TESTS)
         return saveFolderPath + L"\\test-app-zone-history.json";
-#endif
+#else
         return saveFolderPath + L"\\app-zone-history.json";
+#endif
     }
 
     void LoadData();
@@ -53,7 +54,6 @@ public:
     std::optional<FancyZonesDataTypes::AppZoneHistoryData> GetZoneHistory(const std::wstring& appPath, const FancyZonesDataTypes::WorkAreaId& workAreaId) const noexcept;
 
     bool IsAnotherWindowOfApplicationInstanceZoned(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId) const noexcept;
-    void UpdateProcessIdToHandleMap(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId);
     ZoneIndexSet GetAppLastZoneIndexSet(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId, const std::wstring& zoneSetId) const;
 
     void SyncVirtualDesktops();
