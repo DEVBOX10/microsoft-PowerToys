@@ -7,6 +7,7 @@ AACD
 AAD
 AADF
 abap
+abcdefghjkmnpqrstuvxyz
 ABE
 abgr
 abi
@@ -24,6 +25,7 @@ ACFC
 ACFF
 Acl
 aclapi
+AClient
 AColumn
 acrt
 activatable
@@ -31,6 +33,7 @@ ACTIVATEAPP
 activationaction
 ADDUNDORECORD
 ADifferent
+adio
 administra
 ADMINS
 adml
@@ -60,7 +63,7 @@ ALLINPUT
 ALLOWUNDO
 ALLVIEW
 ALPHATYPE
-Altdown
+altdown
 alwaysontop
 amd
 AModifier
@@ -88,16 +91,17 @@ APPIDS
 appium
 Applets
 Applicationcan
-applicationconfiguration
 applicationframehost
 appmanifest
 APPNAME
 appref
 apps
+appsettings
 appwindow
 appwiz
 APSTUDIO
 AQS
+ARandom
 ARCHITEW
 arcosh
 ARemapped
@@ -221,6 +225,7 @@ buildtransitive
 BUTTONUP
 BVal
 BValue
+byapp
 BYPOSITION
 bytearray
 CABD
@@ -232,7 +237,6 @@ Cangjie
 CANRENAME
 CAPTUREBLT
 CAPTURECHANGED
-CARRAY
 CAtl
 CBA
 CBB
@@ -267,13 +271,13 @@ CFEE
 CFFEE
 CFFF
 cguid
+CHANGECBCHAIN
 changecursor
 Changemove
 chdir
 CHILDACTIVATE
 CHILDWINDOW
 chrdavis
-Chromakey
 Chrzan
 CHT
 cidl
@@ -291,9 +295,11 @@ clickonce
 CLIENTEDGE
 clientid
 clientside
+CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
 Cloneable
+closesocket
 clrcall
 Cls
 CLSCTX
@@ -342,6 +348,7 @@ comsuppw
 comsuppwd
 comutil
 concrt
+CONFIGW
 CONFLICTINGMODIFIERKEY
 CONFLICTINGMODIFIERSHORTCUT
 CONOUT
@@ -413,7 +420,6 @@ Dac
 dacl
 DAF
 damienleroy
-DANGEROUSLYCOMMITMERELYTODISKCACHE
 DARKPURPLE
 DARKTEAL
 DARKYELLOW
@@ -445,19 +451,18 @@ dcompi
 DComposition
 dcr
 dcs
-Dct
 DDCDD
 DDCE
 DDEIf
 DDevice
 ddf
-Dds
 DDxgi
 Deact
 debian
 debugbreak
 DECLAR
 declspec
+decryptor
 DED
 Dedup
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
@@ -525,11 +530,13 @@ DPolicy
 DPSAPI
 DQTAT
 DQTYPE
+DRAWCLIPBOARD
 DRAWFRAME
 drawingcolor
 dreamsofameaningfullife
 drf
 drivedetectionwarning
+dsc
 dshow
 DSTINVERT
 DUMMYUNIONNAME
@@ -607,8 +614,11 @@ Emoji
 ENABLEDELAYEDEXPANSION
 enabledisable
 ENABLEDPOPUP
+encodedlaunch
+encryptor
 endpointvolume
 endregion
+ENDSESSION
 ENTERSIZEMOVE
 ENU
 EOAC
@@ -626,6 +636,7 @@ esize
 esrp
 estructuredtext
 etl
+etstat
 etw
 EUQ
 eurochange
@@ -644,8 +655,6 @@ exabyte
 examplehandler
 examplepowertoy
 EXAND
-Excep
-EXCEPINFO
 EXCLUDEFROMCAPTURE
 exdisp
 executionpolicy
@@ -721,6 +730,7 @@ FILEVERSION
 Filtergraph
 Filterkeyboard
 Filterx
+Finalizers
 findfast
 firefox
 FIXEDFILEINFO
@@ -733,6 +743,7 @@ FORCEMINIMIZE
 formatetc
 FRAMECHANGED
 frankychen
+frm
 Froml
 FROMTOUCH
 FSCTL
@@ -762,6 +773,8 @@ GETDPISCALEDSIZE
 GETICON
 GETMINMAXINFO
 GETPROPERTYSTOREFLAGS
+GETSCREENSAVERRUNNING
+GETSECKEY
 GETSTATE
 GETTEXT
 GETTEXTLENGTH
@@ -799,6 +812,7 @@ Hashtable
 hashtag
 HASHVAL
 hbitmap
+hbm
 hbmp
 hbr
 HBRBACKGROUND
@@ -809,7 +823,6 @@ HCRYPTHASH
 HCRYPTPROV
 hcwhite
 hdc
-HDR
 hdrop
 hdwwiz
 HEB
@@ -891,17 +904,12 @@ HWNDPREV
 hyjiacan
 IBase
 IBeam
-IBitmap
-IBlock
 ICapture
 ICEBLUE
 IClass
-IColor
 ICONERROR
-IContext
 IData
 IDD
-IDecoder
 IDesktop
 IDirect
 idl
@@ -910,7 +918,6 @@ IDOn
 IDR
 idx
 IDXGI
-IEncoder
 IEnum
 IExec
 IEXPLORE
@@ -935,7 +942,6 @@ imageresizerinput
 imageresizersettings
 imagingdevices
 ime
-IMetadata
 imeutil
 inetcpl
 Infobar
@@ -973,7 +979,6 @@ Interlop
 INTRESOURCE
 INVALIDARG
 invalidoperatioexception
-IPalette
 ipc
 ipcmanager
 IPlugin
@@ -982,8 +987,6 @@ IPREVIEW
 ipreviewhandlervisualssetfont
 IProperty
 IPublic
-IQuery
-IReader
 irprops
 isbi
 ISearch
@@ -991,15 +994,14 @@ ISettings
 isfinite
 IShell
 isocpp
-ISource
 iss
-ISurface
 ITask
 ith
 ITHUMBNAIL
 IUI
 IUnknown
 IWbem
+IWeb
 IWIC
 iwr
 IYUV
@@ -1023,6 +1025,8 @@ jyuwono
 KBDLLHOOKSTRUCT
 kbm
 kdc
+keybd
+KEYBDDATA
 KEYBDINPUT
 keyboardeventhandlers
 keyboardmanager
@@ -1101,8 +1105,6 @@ LOCALPACKAGE
 localport
 LOCALSYSTEM
 LOCATIONCHANGE
-LOCKBYTES
-LOCKTYPE
 LOGFONT
 LOGFONTW
 logon
@@ -1129,6 +1131,7 @@ LPMINMAXINFO
 LPMONITORINFO
 LPOSVERSIONINFOEXW
 LPPOINT
+LPQUERY
 lprc
 LPRECT
 LPSAFEARRAY
@@ -1138,6 +1141,7 @@ lpt
 LPTHREAD
 LPTOP
 lptpm
+LPTR
 LPTSTR
 LPVOID
 LPW
@@ -1253,6 +1257,7 @@ monitorinfof
 Monthand
 Moq
 MOUSEACTIVATE
+MOUSEDATA
 MOUSEEVENTF
 MOUSEHWHEEL
 MOUSEINPUT
@@ -1283,6 +1288,7 @@ MSIXCA
 MSLLHOOKSTRUCT
 Mso
 msp
+mspaint
 msrc
 msstore
 mst
@@ -1293,11 +1299,15 @@ Mul
 MULTIPLEUSE
 multizone
 mvvm
+mwb
+MWBEx
 myfile
 MYICON
 mysql
 NAMECHANGE
 nameof
+namespaceanddescendants
+nao
 NCACTIVATE
 ncc
 NCCALCSIZE
@@ -1344,6 +1354,7 @@ NLD
 NLog
 nls
 NLSTEXT
+NNN
 NOACTIVATE
 NOAGGREGATION
 NOASYNC
@@ -1365,7 +1376,6 @@ NONCONVERT
 NONELEVATED
 NONINFRINGEMENT
 nonstd
-NOOPEN
 NOOWNERZORDER
 NOPARENTNOTIFY
 NOREDIRECTIONBITMAP
@@ -1428,8 +1438,6 @@ OLEDB
 OLIVEGREEN
 onebranch
 onenote
-ONLYIFCURRENT
-ONLYONCE
 onstd
 oobe
 OOBEPT
@@ -1492,6 +1500,7 @@ pcs
 PCWSTR
 pdb
 pdbonly
+pdisp
 pdo
 pdto
 pdtobj
@@ -1507,6 +1516,7 @@ perfmon
 pesi
 petabyte
 peteblois
+pevent
 PEXCEPTION
 pfn
 pfo
@@ -1528,7 +1538,6 @@ pinvoke
 pipename
 PKBDLLHOOKSTRUCT
 pkey
-PKEY
 plib
 PLK
 ploc
@@ -1561,7 +1570,6 @@ ppidl
 ppmt
 pprm
 pproc
-pprop
 ppshv
 ppsi
 ppsid
@@ -1582,7 +1590,6 @@ previouscamera
 PREVIOUSINSTALLFOLDER
 PREVIOUSVERSIONSINSTALLED
 prevpane
-PRGBA
 prgms
 pri
 PRINTCLIENT
@@ -1599,9 +1606,7 @@ PROGRAMFILES
 projectname
 PROPBAG
 PROPERTYKEY
-PROPERTYNOTFOUND
 propkey
-PROPVARIANT
 propvarutil
 prvpane
 psapi
@@ -1611,8 +1616,6 @@ psfgao
 Psr
 psrm
 psrree
-pstatstg
-pstm
 pstr
 pstream
 pstrm
@@ -1626,7 +1629,6 @@ PToy
 ptstr
 pui
 PULONG
-pvar
 pwa
 pwcs
 pwsh
@@ -1666,6 +1668,7 @@ rclsid
 RCONTROL
 RCtrl
 READMODE
+READOBJECTS
 READWRITE
 RECTDESTINATION
 RECTL
@@ -1704,6 +1707,7 @@ remappings
 REMAPSUCCESSFUL
 REMAPUNSUCCESSFUL
 Remotable
+remoteip
 Removedir
 Removelnk
 renamable
@@ -1727,7 +1731,6 @@ resw
 resx
 retval
 rfc
-RGBE
 RGBQUAD
 rgbs
 rgelt
@@ -1785,7 +1788,6 @@ ryanbodrug
 saahmedm
 sachaple
 sacl
-SAFEARRAY
 safeprojectname
 SAMEKEYPREVIOUSLYMAPPED
 SAMESHORTCUTPREVIOUSLYMAPPED
@@ -1833,6 +1835,7 @@ setzero
 sfgao
 SFGAOF
 SFP
+SHANDLE
 sharpkeys
 SHCNE
 SHCNF
@@ -1930,7 +1933,6 @@ SRCPAINT
 sre
 SResize
 srf
-SRGB
 srme
 srre
 srw
@@ -1959,10 +1961,8 @@ STDMETHODCALLTYPE
 STDMETHODIMP
 stefan
 Stereolithography
-STGC
 STGM
 STGMEDIUM
-STGTY
 sticpl
 stl
 storelogo
@@ -2009,6 +2009,7 @@ SYSICONINDEX
 SYSKEY
 syskeydown
 SYSKEYUP
+SYSLIB
 SYSMENU
 SYSTEMAPPS
 systemroot
@@ -2035,6 +2036,7 @@ taskschd
 tchar
 tcl
 Tcollab
+tcp
 tcs
 tcscpy
 TCustom
@@ -2118,6 +2120,7 @@ uipi
 UIs
 ULARGE
 ULONGLONG
+unapply
 unassign
 uncompilable
 UNCPRIORITY
@@ -2141,6 +2144,7 @@ unremapped
 unsubscribe
 unvirtualized
 UOffset
+UOI
 Updatelayout
 UPGRADINGPRODUCTCODE
 Uptool
@@ -2148,7 +2152,6 @@ Usb
 USEDEFAULT
 USEFILEATTRIBUTES
 USERDATA
-USERDEFINED
 USERDOMAIN
 userprofile
 USESHOWWINDOW
@@ -2165,7 +2168,6 @@ vabdq
 validmodulename
 Vanara
 variantassignment
-VARTYPE
 vcamp
 vccorlib
 vcdl
@@ -2185,7 +2187,6 @@ VERBSONLY
 VERBW
 VERIFYCONTEXT
 verrsrc
-VERSIONED
 VERSIONINFO
 Versioning
 VFT
@@ -2286,6 +2287,7 @@ wingetcreate
 Winhook
 winkey
 WINL
+winlogon
 winmd
 winmm
 WINNT
@@ -2293,7 +2295,9 @@ winres
 winrt
 winsdk
 winsdkver
+Winsock
 winspool
+winsta
 winternl
 WINTHRESHOLD
 winui
@@ -2340,8 +2344,12 @@ wregex
 WReserved
 WResize
 writefile
+WRITEOBJECTS
 Wrk
 wrl
+WSAEADDRINUSE
+WSAEADDRNOTAVAIL
+WSAECONNRESET
 wscui
 wsf
 wsh
@@ -2375,6 +2383,7 @@ XIncrement
 XLoc
 XNamespace
 XOffset
+XPels
 XPixel
 XResource
 xsi
@@ -2388,8 +2397,8 @@ yinle
 yinwang
 yinyue
 YOffset
+YPels
 ypescript
-YQuantized
 YResolution
 YStr
 YUY
