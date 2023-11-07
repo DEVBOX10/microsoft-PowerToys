@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -20,7 +20,6 @@ using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers;
 using Peek.FilePreviewer.Previewers.Interfaces;
 using Peek.UI.Telemetry.Events;
-using Windows.ApplicationModel.Resources;
 
 namespace Peek.FilePreviewer
 {
@@ -49,12 +48,14 @@ namespace Peek.FilePreviewer
         [NotifyPropertyChangedFor(nameof(ImagePreviewer))]
         [NotifyPropertyChangedFor(nameof(VideoPreviewer))]
         [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
+        [NotifyPropertyChangedFor(nameof(ArchivePreviewer))]
+        [NotifyPropertyChangedFor(nameof(ShellPreviewHandlerPreviewer))]
         [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
 
         private IPreviewer? previewer;
 
         [ObservableProperty]
-        private string imageInfoTooltip = ResourceLoader.GetForViewIndependentUse().GetString("PreviewTooltip_Blank");
+        private string imageInfoTooltip = ResourceLoaderInstance.ResourceLoader.GetString("PreviewTooltip_Blank");
 
         private CancellationTokenSource _cancellationTokenSource = new();
 
@@ -93,6 +94,10 @@ namespace Peek.FilePreviewer
         public IVideoPreviewer? VideoPreviewer => Previewer as IVideoPreviewer;
 
         public IBrowserPreviewer? BrowserPreviewer => Previewer as IBrowserPreviewer;
+
+        public IArchivePreviewer? ArchivePreviewer => Previewer as IArchivePreviewer;
+
+        public IShellPreviewHandlerPreviewer? ShellPreviewHandlerPreviewer => Previewer as IShellPreviewHandlerPreviewer;
 
         public IUnsupportedFilePreviewer? UnsupportedFilePreviewer => Previewer as IUnsupportedFilePreviewer;
 
@@ -145,7 +150,15 @@ namespace Peek.FilePreviewer
                 ImagePreview.Visibility = Visibility.Collapsed;
                 VideoPreview.Visibility = Visibility.Collapsed;
                 BrowserPreview.Visibility = Visibility.Collapsed;
+                ArchivePreview.Visibility = Visibility.Collapsed;
                 UnsupportedFilePreview.Visibility = Visibility.Collapsed;
+
+                ImagePreview.FlowDirection = FlowDirection.LeftToRight;
+                VideoPreview.FlowDirection = FlowDirection.LeftToRight;
+                BrowserPreview.FlowDirection = FlowDirection.LeftToRight;
+                ArchivePreview.FlowDirection = FlowDirection.LeftToRight;
+                UnsupportedFilePreview.FlowDirection = FlowDirection.LeftToRight;
+
                 return;
             }
 
@@ -204,10 +217,15 @@ namespace Peek.FilePreviewer
         partial void OnPreviewerChanging(IPreviewer? value)
         {
             VideoPreview.MediaPlayer.Pause();
+            VideoPreview.MediaPlayer.Source = null;
             VideoPreview.Source = null;
 
             ImagePreview.Source = null;
+            ArchivePreview.Source = null;
             BrowserPreview.Source = null;
+
+            ShellPreviewHandlerPreviewer?.Clear();
+            ShellPreviewHandlerPreview.Source = null;
 
             if (Previewer != null)
             {
@@ -257,12 +275,50 @@ namespace Peek.FilePreviewer
             }
         }
 
+        private void ShellPreviewHandlerPreview_HandlerLoaded(object sender, EventArgs e)
+        {
+            if (ShellPreviewHandlerPreviewer != null)
+            {
+                ShellPreviewHandlerPreviewer.State = PreviewState.Loaded;
+            }
+        }
+
+        private void ShellPreviewHandlerPreview_HandlerError(object sender, EventArgs e)
+        {
+            if (ShellPreviewHandlerPreviewer != null)
+            {
+                ShellPreviewHandlerPreviewer.State = PreviewState.Error;
+            }
+        }
+
         private async void KeyboardAccelerator_CtrlC_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
         {
             if (Previewer != null)
             {
                 await Previewer.CopyAsync();
             }
+        }
+
+        private void KeyboardAccelerator_Space_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            var mediaPlayer = VideoPreview.MediaPlayer;
+
+            if (mediaPlayer.Source == null || !mediaPlayer.CanPause)
+            {
+                return;
+            }
+
+            if (mediaPlayer.CurrentState == Windows.Media.Playback.MediaPlayerState.Playing)
+            {
+                mediaPlayer.Pause();
+            }
+            else
+            {
+                mediaPlayer.Play();
+            }
+
+            // Prevent the keyboard accelerator to be called twice
+            args.Handled = true;
         }
 
         private async Task UpdateImageTooltipAsync(CancellationToken cancellationToken)
